@@ -33,12 +33,14 @@ public class DatabaseController
     }
     
     private void createStructure() throws SQLException{
-	String createSolarSystemQuery = "CREATE TABLE IF NOT EXISTS solar_systems (ID INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, NAME VARCHAR(255) UNIQUE)";
-	String createSignaturesQuery = "CREATE TABLE IF NOT EXISTS signatures (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, name VARCHAR(255), scan_group VARCHAR(255), signal_strength FLOAT, solar_system_id INT )";
-	String createUserTable = "CREATE TABLE IF NOT EXISTS pilots (character_id INT PRIMARY KEY NOT NULL, character_name VARCHAR(255) UNIQUE ";
+        String[] initQueries = new String[]{
+            "CREATE TABLE IF NOT EXISTS solar_systems (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, name VARCHAR(255) UNIQUE)",
+            "CREATE TABLE IF NOT EXISTS signatures (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, name VARCHAR(255), scan_group VARCHAR(255), signal_strength FLOAT, solar_system_id INT )",
+            "CREATE TABLE IF NOT EXISTS pilots (character_id INT PRIMARY KEY NOT NULL, character_name VARCHAR(255) UNIQUE) "};
 	try(Statement statement = connection.createStatement()){
-	    statement.executeUpdate(createSolarSystemQuery);
-	    statement.executeUpdate(createSignaturesQuery);
+	    for(String query : initQueries){
+                statement.executeUpdate(query);
+            }            
 	}
 	LOGGER.info("created database structure.");
     }

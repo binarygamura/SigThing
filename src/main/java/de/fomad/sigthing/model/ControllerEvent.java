@@ -27,6 +27,8 @@ public class ControllerEvent<T>
     
     public static enum EventType {
 	ERROR,
-	GOT_TOKEN
+	GOT_TOKEN,
+        GOT_CHARACTER_INFO,
+        GOT_CHARACTER,
     }
 }

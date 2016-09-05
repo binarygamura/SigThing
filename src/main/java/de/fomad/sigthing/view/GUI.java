@@ -1,6 +1,7 @@
 package de.fomad.sigthing.view;
 
 import de.fomad.sigthing.controller.Controller;
+import de.fomad.sigthing.model.CharacterInfo;
 import de.fomad.sigthing.model.ControllerEvent;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -31,6 +32,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jnativehook.NativeHookException;
+import de.fomad.sigthing.model.Character;
 
 /**
  * @author binary gamura
@@ -47,9 +49,11 @@ public class GUI extends JFrame implements Observer
     
     private InfoPanel infoPanel;
     
+    private static final String TITLE = "SigThing";
+    
     private GUI()
     {
-	super("SigThing");
+	super(TITLE);
 	
 	GUI.this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	GUI.this.addWindowListener(new WindowAdapter()
@@ -77,6 +81,8 @@ public class GUI extends JFrame implements Observer
     private JPanel createMainGui()
     {
 	JPanel mainGui = new JPanel(new BorderLayout());
+        
+        
         
         infoPanel = new InfoPanel();
         infoPanel.setBorder(BorderFactory.createTitledBorder("selected item"));
@@ -106,11 +112,13 @@ public class GUI extends JFrame implements Observer
 	JButton openAuthButton = new JButton("login with eve");
 	openAuthButton.addActionListener((e) -> {
 	    try
-	    {
-		String loginURL = properties.getProperty("login_url");
+	    {                
+		String loginURL = properties.getProperty("auth_url")+"/authorize";
 		String clientId = properties.getProperty("client_id");
 		String callbackUrl = properties.getProperty("callback_url");
 		
+                
+                
 		URIBuilder builder = new URIBuilder(loginURL);
 		builder.addParameter("response_type", "code");
 		builder.addParameter("redirect_uri", callbackUrl);
@@ -147,11 +155,7 @@ public class GUI extends JFrame implements Observer
 	properties = new Properties();
 	properties.load(new FileInputStream(pathToConfig));
 	
-	controller = new Controller(
-		new URI(properties.getProperty("callback_url")), 
-		new URI(properties.getProperty("verification_url")),
-		properties.getProperty("client_id"),
-		properties.getProperty("client_secret"));
+	controller = new Controller(properties);
 	controller.addObserver(this);
         controller.init();
 	
@@ -213,7 +217,17 @@ public class GUI extends JFrame implements Observer
 		    break;
 		case GOT_TOKEN:
 		    cardLayout.show(getContentPane(), "mainGui");
+                    LOGGER.info("got access token from auth api.");
 		    break;
+                case GOT_CHARACTER_INFO:
+                    CharacterInfo characterInfo = (CharacterInfo) event.getPayload();
+                    setTitle(TITLE+" ("+characterInfo.getName()+")");
+                    LOGGER.info("got complete character info.");
+                    break;
+                case GOT_CHARACTER:
+                    Character character = (Character) event.getPayload();
+                    LOGGER.info("got complete character data.");
+                    break;
 	    }
 	}
     }

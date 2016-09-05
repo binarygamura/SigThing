@@ -1,12 +1,15 @@
 package de.fomad.sigthing.view;
 
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
  *
  * @author binary
  */
-public class InfoPanel extends SimpleForm
+public class InfoPanel extends JPanel 
 {
     private JTextField signatureField;
     
@@ -24,9 +27,16 @@ public class InfoPanel extends SimpleForm
         signalStrenghField = new JTextField();
         segmentField = new JTextField();
         
-        addRow("Signature", signatureField);
-        addRow("Strenght", signalStrenghField);
-        addRow("Segment", segmentField);
+        JPanel characterInfoPanel = new JPanel(new BorderLayout());
+        
+        
+        SimpleForm form = new SimpleForm();
+        
+        form.addRow("Signature", signatureField);
+        form.addRow("Strenght", signalStrenghField);
+        form.addRow("Segment", segmentField);
+        
+        add(form);
     }
     
     
