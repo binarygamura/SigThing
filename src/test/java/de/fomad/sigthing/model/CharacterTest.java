@@ -1,17 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.fomad.sigthing.model;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -20,18 +10,9 @@ import static org.junit.Assert.*;
  *
  * @author binary
  */
-public class CharacterTest
+public class CharacterTest extends BasicJsonParseTest
 {
-    private static Gson gson;
-    
-    private static DateFormat dateFormat;
-    
-    @BeforeClass
-    public static void init(){
-        gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create();
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    }
-    
+ 
     @Test
     public void testPositiv1() throws URISyntaxException{
         String source = "{\n" +

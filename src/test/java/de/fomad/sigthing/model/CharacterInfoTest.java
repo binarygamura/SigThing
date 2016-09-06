@@ -1,11 +1,5 @@
 package de.fomad.sigthing.model;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -13,18 +7,8 @@ import static org.junit.Assert.*;
 /**
  * 
  */
-public class CharacterInfoTest
+public class CharacterInfoTest extends BasicJsonParseTest
 {
-    private static Gson gson;
-    
-    private static DateFormat dateFormat;
-    
-    @BeforeClass
-    public static void init(){
-        gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create();
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    }
-    
     @Test
     public void testPositiv1(){
         String input ="{\n" +

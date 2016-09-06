@@ -27,12 +27,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jnativehook.NativeHookException;
 import de.fomad.sigthing.model.Character;
+import javax.swing.JDialog;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 /**
  * @author binary gamura
@@ -48,6 +49,8 @@ public class GUI extends JFrame implements Observer
     private Controller controller;
     
     private InfoPanel infoPanel;
+    
+    private HistoryPanel historyPanel;
     
     private static final String TITLE = "SigThing";
     
@@ -82,23 +85,38 @@ public class GUI extends JFrame implements Observer
     {
 	JPanel mainGui = new JPanel(new BorderLayout());
         
-        
+        historyPanel = new HistoryPanel();
         
         infoPanel = new InfoPanel();
         infoPanel.setBorder(BorderFactory.createTitledBorder("selected item"));
         
+        
         JScrollPane centerPanel = new JScrollPane();
+        centerPanel.setBorder(BorderFactory.createTitledBorder("current system"));
+        
+        JButton helpButton = new JButton("help");
+        helpButton.setMnemonic('h');
         
         JButton deleteButton = new JButton("delete");
-        JButton commentButton = new JButton("comment");
+        deleteButton.setMnemonic('d');
         
+        JButton commentButton = new JButton("comment");
+        commentButton.setMnemonic('c');
+        
+        JButton optionsButton = new JButton("options");
+        optionsButton.setMnemonic('o');
+        
+        optionsButton.setMnemonic('o');
         JPanel buttonPanel = new JPanel(new GridLayout(1, 0));
         buttonPanel.add(deleteButton);
         buttonPanel.add(commentButton);
+        buttonPanel.add(optionsButton);
+        buttonPanel.add(helpButton);
 	
         mainGui.add(infoPanel, BorderLayout.NORTH);
         mainGui.add(centerPanel, BorderLayout.CENTER);
         mainGui.add(buttonPanel, BorderLayout.SOUTH);
+        mainGui.add(historyPanel, BorderLayout.EAST);
         
 	return mainGui;
     }
@@ -108,8 +126,9 @@ public class GUI extends JFrame implements Observer
 	cardLayout = new CardLayout();
 	getContentPane().setLayout(cardLayout);
         
-	
-	JButton openAuthButton = new JButton("login with eve");
+
+        
+	JButton openAuthButton = new JButton("login with eve");        
 	openAuthButton.addActionListener((e) -> {
 	    try
 	    {                
@@ -117,8 +136,6 @@ public class GUI extends JFrame implements Observer
 		String clientId = properties.getProperty("client_id");
 		String callbackUrl = properties.getProperty("callback_url");
 		
-                
-                
 		URIBuilder builder = new URIBuilder(loginURL);
 		builder.addParameter("response_type", "code");
 		builder.addParameter("redirect_uri", callbackUrl);
@@ -151,6 +168,7 @@ public class GUI extends JFrame implements Observer
 	getContentPane().add(createMainGui(),"mainGui");
 	
 	cardLayout.show(getContentPane(),"openAuthButton");
+//	cardLayout.show(getContentPane(),"mainGui");
 	
 	properties = new Properties();
 	properties.load(new FileInputStream(pathToConfig));
@@ -159,6 +177,11 @@ public class GUI extends JFrame implements Observer
 	controller.addObserver(this);
         controller.init();
 	
+        setFocusable(false);
+        setAlwaysOnTop(true);
+        toFront();
+        
+        
 	setMinimumSize(new Dimension(640, 480));
 	validate();
 	pack();
@@ -168,11 +191,15 @@ public class GUI extends JFrame implements Observer
     
     public static void main(String[] args)
     {
+        System.setProperty("awt.useSystemAAFontSettings","on");
+        System.setProperty("swing.aatext", "true");
 	try
 	{
-	    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            JFrame.setDefaultLookAndFeelDecorated(true);
+            JDialog.setDefaultLookAndFeelDecorated(true);
+	    UIManager.setLookAndFeel(new NimbusLookAndFeel());
 	}
-	catch(ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex)
+	catch(Exception ex)
 	{
 	    LOGGER.fatal("error while settings look and feel.", ex);
 	}
@@ -208,27 +235,34 @@ public class GUI extends JFrame implements Observer
     @Override
     public void update(Observable o, Object arg)
     {
-	if(o == controller){
-	    ControllerEvent event = (ControllerEvent) arg;
-	    switch(event.getType()){
-		case ERROR:
-		    Exception e = (Exception) event.getPayload();
-		    showError(e.getMessage(), "error");
-		    break;
-		case GOT_TOKEN:
-		    cardLayout.show(getContentPane(), "mainGui");
-                    LOGGER.info("got access token from auth api.");
-		    break;
-                case GOT_CHARACTER_INFO:
-                    CharacterInfo characterInfo = (CharacterInfo) event.getPayload();
-                    setTitle(TITLE+" ("+characterInfo.getName()+")");
-                    LOGGER.info("got complete character info.");
-                    break;
-                case GOT_CHARACTER:
-                    Character character = (Character) event.getPayload();
-                    LOGGER.info("got complete character data.");
-                    break;
-	    }
-	}
+        try
+        {
+            if(o == controller){
+                ControllerEvent event = (ControllerEvent) arg;
+                switch(event.getType()){
+                    case ERROR:
+                        Exception e = (Exception) event.getPayload();
+                        showError(e.getMessage(), "error");
+                        break;
+                    case GOT_TOKEN:
+                        cardLayout.show(getContentPane(), "mainGui");
+                        LOGGER.info("got access token from auth api.");
+                        break;
+                    case GOT_CHARACTER_INFO:
+                        CharacterInfo characterInfo = (CharacterInfo) event.getPayload();
+                        setTitle(TITLE+" ("+characterInfo.getName()+")");
+                        LOGGER.info("got complete character info.");                    
+                        break;
+                    case GOT_CHARACTER:
+                        Character character = (Character) event.getPayload();
+                        LOGGER.info("got complete character data.");
+                        infoPanel.setIcon(character);
+                        break;
+                }
+            }
+        }
+        catch(Exception ex){
+            LOGGER.error("error while handling event!", ex);
+        }
     }
 }

@@ -73,7 +73,7 @@ public class Controller extends Observable implements Observer
     {
         this.properties = properties;   
         model = new Model();
-	locationPoller = new LocationPoller(model);
+	locationPoller = new LocationPoller(model, properties);
 	webserver = new DummyWebServer(new URI(properties.getProperty("callback_url")));
 	webserver.addObserver(Controller.this);
         URI verificationUrl = new URI(properties.getProperty("auth_url")+"/token");
@@ -205,6 +205,11 @@ public class Controller extends Observable implements Observer
 
         }
     }
+    
+    private void startPollingLocation(){
+        locationPoller.start(httpClient);
+        LOGGER.info("started location polling.");
+    }
 
     @Override
     public void update(Observable o, Object arg)
@@ -227,6 +232,7 @@ public class Controller extends Observable implements Observer
 			getAccessToken(authData, false);
                         queryCharacterInformation();
                         queryCharacterSheet();
+                        startPollingLocation();
 			break;
 		}
 	    }

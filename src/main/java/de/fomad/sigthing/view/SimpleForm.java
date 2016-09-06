@@ -1,8 +1,8 @@
 package de.fomad.sigthing.view;
 
-import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -18,6 +18,7 @@ public class SimpleForm extends JPanel
     public SimpleForm(){
         super(new GridBagLayout());
         c = new GridBagConstraints();
+        c.insets = new Insets(5, 5, 5, 5);
         c.gridx = 0;
         c.gridy = -1;
         c.gridheight = 1;
