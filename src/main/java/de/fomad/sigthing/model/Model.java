@@ -4,41 +4,29 @@ package de.fomad.sigthing.model;
  *
  * @author binary
  */
-public class Model
-{
+public class Model {
+
     private CharacterInfo characterInfo;
 
-    private AuthData authData;
-    
     private Character character;
 
-    public Character getCharacter()
-    {
-        return character;
+    public Model() {
+
     }
 
-    public void setCharacter(Character character)
-    {
-        this.character = character;
-    }
-    
-    public CharacterInfo getCharacterInfo()
-    {
-        return characterInfo;
+    public Character getCharacter() {
+	return character;
     }
 
-    public void setCharacterInfo(CharacterInfo characterInfo)
-    {
-        this.characterInfo = characterInfo;
+    public void setCharacter(Character character) {
+	this.character = character;
     }
 
-    public AuthData getAuthData()
-    {
-        return authData;
+    public CharacterInfo getCharacterInfo() {
+	return characterInfo;
     }
 
-    public void setAuthData(AuthData authData)
-    {
-        this.authData = authData;
+    public void setCharacterInfo(CharacterInfo characterInfo) {
+	this.characterInfo = characterInfo;
     }
 }

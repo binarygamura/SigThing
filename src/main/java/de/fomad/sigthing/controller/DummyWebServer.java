@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Observable;
 import java.util.stream.Collectors;
@@ -22,25 +23,24 @@ import org.apache.log4j.Logger;
  *
  * @author binary gamura
  */
-public class DummyWebServer extends Observable implements Runnable
-{
+public class DummyWebServer extends Observable implements Runnable {
+
     private static final Logger LOGGER = LogManager.getLogger(DummyWebServer.class);
-    
-    private final URI callbackUrl;
-    
+
+    private final int port;
+
     private ServerSocket socket;
-    
+
     private Thread thread;
-    
-    public DummyWebServer(URI callbackUrl){
-	this.callbackUrl = callbackUrl;
+
+    public DummyWebServer(int port) {
+	this.port = port;
     }
-    
-    public boolean startListening() throws IOException{
+
+    public boolean startListening() throws IOException {
 	boolean wasStarted = false;
-	if(thread == null) {
-	    int port = callbackUrl.getPort();
-	    LOGGER.info("starting webserver thread on port "+port);
+	if (thread == null) {
+	    LOGGER.info("starting webserver thread on port " + port);
 	    socket = new ServerSocket(port);
 	    thread = new Thread(this);
 	    thread.start();
@@ -48,72 +48,70 @@ public class DummyWebServer extends Observable implements Runnable
 	}
 	return wasStarted;
     }
-    
-    
-    public boolean stopListening(){
+
+    public boolean stopListening() {
 	boolean wasStopped = false;
-	if(thread != null){
-	    
-	    try
-	    {
+	if (thread != null) {
+
+	    try {
 		thread.interrupt();
-		if(socket != null){
+		if (socket != null) {
 		    socket.close();
 		}
 	    }
-	    catch(IOException ex){
+	    catch (IOException ex) {
 		LOGGER.warn("error while stopping the dummy webserver.", ex);
 	    }
-	    finally
-	    {
+	    finally {
 		thread = null;
 	    }
 	}
 	LOGGER.info("stopped webserver thread.");
 	return wasStopped;
     }
-    
+
     @Override
-    public void run()
-    {
-	try
-	{
+    public void run() {
+	try {
 	    LOGGER.info("ready to accept incoming connections.");
-	    try(
-		Socket accepted = socket.accept();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(accepted.getInputStream()));
-		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(accepted.getOutputStream())))
-	    {
-		LOGGER.info("accepted connection from "+accepted.getInetAddress());
+	    try (
+		    Socket accepted = socket.accept();
+		    BufferedReader reader = new BufferedReader(new InputStreamReader(accepted.getInputStream(), StandardCharsets.UTF_8));
+		    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(accepted.getOutputStream(), StandardCharsets.UTF_8))) {
+		LOGGER.info("accepted connection from " + accepted.getInetAddress());
 		String requestLine = reader.readLine();
-		LOGGER.debug("request line: "+requestLine);
+		LOGGER.debug("request line: " + requestLine);
 		String line;
-		while((line = reader.readLine()) != null){
-		    LOGGER.debug("line: "+line);
-		    if(line.trim().isEmpty()){
+		while ((line = reader.readLine()) != null) {
+		    LOGGER.debug("line: " + line);
+		    if (line.trim().isEmpty()) {
 			break;
 		    }
 		}
-		
+
 		String htmlResponse = "<html><head><title>Login complete</title></head><body><h1>Login complete</h1><p>You can close now this tab.</p></body></html>";
 		byte[] responseBodyBytes = htmlResponse.getBytes("UTF-8");
 		writer.write("HTTP/1.1 200 OK\n");
 		writer.write("Server: DummyWebServer\n");
-		writer.write("Content-Length: "+responseBodyBytes.length+"\n");
+		writer.write("Content-Length: " + responseBodyBytes.length + "\n");
 		writer.write("Content-Type: text/html;charset=UTF-8\n");
 		writer.write("\n");
 		writer.write(htmlResponse);
 		writer.flush();
 		LOGGER.info("sent response to the browser.");
-		
+
+		String[] requestLineParts  = requestLine.split("\\s");
+		if(requestLineParts == null || requestLineParts.length != 3){
+		    throw new IOException("parsed invalid request line!");
+		}
 		
 		URI completeCallbackUrl = new URI(requestLine.split("\\s")[1]);
 		List<NameValuePair> params = URLEncodedUtils.parse(completeCallbackUrl, "UTF-8");
 		List<NameValuePair> matches = params.stream().filter((e) -> e.getName().equalsIgnoreCase("code")).limit(1).collect(Collectors.toList());
-		if(matches.isEmpty()){
+		if (matches.isEmpty()) {
 		    throw new Exception("unable to extract authorization code from response!");
 		}
-		LOGGER.info("got access token \""+matches.get(0).getValue()+"\".");
+		LOGGER.info("got access token \"" + matches.get(0).getValue() + "\".");
 		AuthData authData = new AuthData();
 		authData.setAccessCode(matches.get(0).getValue());
 		DummyWebServerEvent<AuthData> event = new DummyWebServerEvent<>(authData, DummyWebServerEvent.EventType.GOT_RESPONSE);
@@ -121,18 +119,20 @@ public class DummyWebServer extends Observable implements Runnable
 		notifyObservers(event);
 	    }
 	}
-	catch(IOException ex)
-	{
+	catch (IOException ex) {
 	    LOGGER.error("IO-Exception while reading the response from local browser.", ex);
 	    DummyWebServerEvent<Exception> event = new DummyWebServerEvent<>(ex, DummyWebServerEvent.EventType.ERROR);
 	    setChanged();
 	    notifyObservers(event);
 	}
-	catch(Exception ex){
+	catch (Exception ex) {
 	    LOGGER.error("critical error!", ex);
 	    DummyWebServerEvent<Exception> event = new DummyWebServerEvent<>(ex, DummyWebServerEvent.EventType.ERROR);
 	    setChanged();
 	    notifyObservers(event);
+	}
+	finally {
+	    LOGGER.info("internal webserver terminated.");
 	}
     }
 }
