@@ -22,4 +22,8 @@ Feel free to write an email to frederik.priede@gmail.com if you have any concern
 Please note that this software is work in progress and might not run on your operating system or hardware.
 
 ## Licence
-This is free software! Dont blame me, if this app kills your hardware, software, your cat or even your familiy. I warned you!
+This Free software! Dont blame me, if this app kills your hardware, software, your cat or even your familiy. I warned you!
+I use media and stuff from other people:
+
+- Text Message Alert 5 Sound from Daniel Simion, taken from [soundbible](http://soundbible.com/2158-Text-Message-Alert-5.html)
+- Awesome Free Icon Set from [fatcow](http://www.fatcow.com/free-icons)

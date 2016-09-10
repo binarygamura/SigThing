@@ -7,8 +7,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import de.fomad.sigthing.model.Character;
+import de.fomad.sigthing.model.SolarSystem;
+import java.awt.Component;
 import java.net.MalformedURLException;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
+import javax.swing.JList;
 
 /**
  *
@@ -31,6 +35,11 @@ public class InfoPanel extends JPanel {
     public InfoPanel() {
 	super(new BorderLayout());
 	init();
+    }
+    
+    public void setCurrentSolarSystem(SolarSystem solarSystem){
+	solarSystemNameField.setText(solarSystem.getName());
+	solarSystemNameField.setCaretPosition(0);
     }
 
     private void init() {
@@ -71,4 +80,6 @@ public class InfoPanel extends JPanel {
     public void setIcon(Character character) throws MalformedURLException {
 	iconLabel.setIcon(new ImageIcon(character.getPortrait().getLarge().getHref().toURL()));
     }
+    
+
 }

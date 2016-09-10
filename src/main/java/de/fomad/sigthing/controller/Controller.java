@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import de.fomad.sigthing.model.Character;
+import de.fomad.sigthing.model.LocationPollerEvent;
 
 /**
  *
@@ -51,6 +52,7 @@ public class Controller extends Observable implements Observer {
 	webserver.addObserver(Controller.this);
 	httpController = new HttpController(new URI(authUrl + "/token"), clientId, clientSecret);
 	locationPoller = new LocationPoller(model, apiUrl, httpController);
+	locationPoller.addObserver(Controller.this);
 
     }
 
@@ -109,8 +111,15 @@ public class Controller extends Observable implements Observer {
 			break;
 		}
 	    }
+	    else if(o == locationPoller){
+		LocationPollerEvent event = (LocationPollerEvent) arg;
+		databaseController.save(event.getNewLocation());
+		model.addSolarSystemToTravelRoute(event.getNewLocation());
+		setChanged();
+		notifyObservers(new ControllerEvent<>(event.getNewLocation(), ControllerEvent.EventType.SOLAR_SYSTEM_CHANGE));
+	    }
 	}
-	catch (URISyntaxException | IOException ex) {
+	catch (SQLException | URISyntaxException | IOException ex) {
 	    LOGGER.fatal("error while handling events.", ex);
 	    ControllerEvent<Exception> event = new ControllerEvent<>(ex, ControllerEvent.EventType.ERROR);
 	    setChanged();

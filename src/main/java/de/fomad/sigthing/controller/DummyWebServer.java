@@ -80,6 +80,9 @@ public class DummyWebServer extends Observable implements Runnable {
 		    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(accepted.getOutputStream(), StandardCharsets.UTF_8))) {
 		LOGGER.info("accepted connection from " + accepted.getInetAddress());
 		String requestLine = reader.readLine();
+		if(requestLine == null){
+		    throw new IOException("unable to read request line from http response.");
+		}
 		LOGGER.debug("request line: " + requestLine);
 		String line;
 		while ((line = reader.readLine()) != null) {
@@ -99,11 +102,6 @@ public class DummyWebServer extends Observable implements Runnable {
 		writer.write(htmlResponse);
 		writer.flush();
 		LOGGER.info("sent response to the browser.");
-
-		String[] requestLineParts  = requestLine.split("\\s");
-		if(requestLineParts == null || requestLineParts.length != 3){
-		    throw new IOException("parsed invalid request line!");
-		}
 		
 		URI completeCallbackUrl = new URI(requestLine.split("\\s")[1]);
 		List<NameValuePair> params = URLEncodedUtils.parse(completeCallbackUrl, "UTF-8");

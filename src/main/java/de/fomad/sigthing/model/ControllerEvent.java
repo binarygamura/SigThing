@@ -29,5 +29,6 @@ public class ControllerEvent<T> {
 	GOT_TOKEN,
 	GOT_CHARACTER_INFO,
 	GOT_CHARACTER,
+	SOLAR_SYSTEM_CHANGE
     }
 }

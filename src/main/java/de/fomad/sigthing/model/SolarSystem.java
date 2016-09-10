@@ -1,5 +1,7 @@
 package de.fomad.sigthing.model;
 
+import java.util.Objects;
+
 /**
  *
  * @author binary
@@ -26,4 +28,27 @@ public class SolarSystem extends Reference {
 	this.name = name;
     }
 
+    @Override
+    public int hashCode() {
+	int hash = 7;
+	return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+	if (obj == null) {
+	    return false;
+	}
+	if (getClass() != obj.getClass()) {
+	    return false;
+	}
+	final SolarSystem other = (SolarSystem) obj;
+	if (this.id != other.id) {
+	    return false;
+	}
+	if (!Objects.equals(this.name, other.name)) {
+	    return false;
+	}
+	return true;
+    }
 }

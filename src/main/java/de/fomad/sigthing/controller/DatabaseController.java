@@ -1,9 +1,12 @@
 package de.fomad.sigthing.controller;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import de.fomad.sigthing.model.Signature;
+import de.fomad.sigthing.model.SolarSystem;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -16,16 +19,21 @@ import org.apache.log4j.Logger;
  */
 public class DatabaseController {
 
-    private Logger LOGGER = LogManager.getLogger(DatabaseController.class);
+    private static final Logger LOGGER = LogManager.getLogger(DatabaseController.class);
 
-    private Connection connection;
+    private ComboPooledDataSource databasePool;
 
-    public void initDatabase() throws ClassNotFoundException, SQLException {
+    public void initDatabase() throws ClassNotFoundException, SQLException, PropertyVetoException {
 
-	Class.forName("org.h2.Driver");
 	File dbFile = new File("~/sigthing.db");
+
+	databasePool = new ComboPooledDataSource();
+	databasePool.setDriverClass("org.h2.Driver");
+	databasePool.setJdbcUrl("jdbc:h2:~/sigthing.db");
+	databasePool.setUser("");
+	databasePool.setPassword("");
+
 	boolean doesFileExist = dbFile.exists();
-	connection = DriverManager.getConnection("jdbc:h2:~/sigthing.db", "", "");
 	if (!doesFileExist) {
 	    createStructure();
 	}
@@ -36,8 +44,8 @@ public class DatabaseController {
 	String[] initQueries = new String[]{
 	    "CREATE TABLE IF NOT EXISTS solar_systems (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, name VARCHAR(255) UNIQUE)",
 	    "CREATE TABLE IF NOT EXISTS signatures (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, name VARCHAR(255), scan_group VARCHAR(255), signal_strength FLOAT, solar_system_id INT )",
-	    "CREATE TABLE IF NOT EXISTS pilots (character_id INT PRIMARY KEY NOT NULL, character_name VARCHAR(255) UNIQUE) "};
-	try (Statement statement = connection.createStatement()) {
+	    "CREATE TABLE IF NOT EXISTS pilots (id INT PRIMARY KEY NOT NULL, character_name VARCHAR(255) UNIQUE) "};
+	try (Connection connection = databasePool.getConnection(); Statement statement = connection.createStatement()) {
 	    for (String query : initQueries) {
 		statement.executeUpdate(query);
 	    }
@@ -47,5 +55,14 @@ public class DatabaseController {
 
     public List<Signature> getSignatures(String solarSystemId) {
 	return null;
+    }
+
+    public void save(SolarSystem solarSystem) throws SQLException {
+	String query = "MERGE INTO solar_systems (id, name) VALUES (?,?)";
+	try (Connection connection = databasePool.getConnection(); PreparedStatement insertStatement = connection.prepareStatement(query)) {
+	    insertStatement.setInt(1, solarSystem.getId());
+	    insertStatement.setString(2, solarSystem.getName());
+	    insertStatement.executeUpdate();
+	}
     }
 }

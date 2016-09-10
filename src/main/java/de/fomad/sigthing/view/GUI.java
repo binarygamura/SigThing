@@ -32,7 +32,15 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jnativehook.NativeHookException;
 import de.fomad.sigthing.model.Character;
+import de.fomad.sigthing.model.SolarSystem;
+import de.fomad.sigthing.view.icons.IconCache;
+import de.fomad.sigthing.view.sounds.SoundManager;
+import java.awt.Component;
+import java.io.InputStream;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 /**
@@ -44,8 +52,6 @@ public class GUI extends JFrame implements Observer {
 
     private CardLayout cardLayout;
 
-    private Properties properties;
-
     private transient Controller controller;
 
     private InfoPanel infoPanel;
@@ -54,9 +60,17 @@ public class GUI extends JFrame implements Observer {
 
     private static final String TITLE = "SigThing";
 
+    private final IconCache iconCache;
+
+    private AboutDialog aboutDialog;
+    
+    private final SoundManager soundManager;
+    
     private GUI() {
 	super(TITLE);
-
+	soundManager = new SoundManager();
+	iconCache = new IconCache();
+	setIconImage(iconCache.getIcon(IconCache.IconId.APP_ICON));
 	GUI.this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	GUI.this.addWindowListener(new WindowAdapter() {
 	    @Override
@@ -64,6 +78,10 @@ public class GUI extends JFrame implements Observer {
 		exitOperation();
 	    }
 	});
+    }
+
+    IconCache getIconCache() {
+	return iconCache;
     }
 
     private void exitOperation() {
@@ -80,11 +98,8 @@ public class GUI extends JFrame implements Observer {
 
     private JPanel createMainGui() {
 	JPanel mainGui = new JPanel(new BorderLayout());
-
-	historyPanel = new HistoryPanel();
-
+	
 	infoPanel = new InfoPanel();
-	infoPanel.setBorder(BorderFactory.createTitledBorder("selected item"));
 
 	JScrollPane centerPanel = new JScrollPane();
 	centerPanel.setBorder(BorderFactory.createTitledBorder("current system"));
@@ -101,12 +116,18 @@ public class GUI extends JFrame implements Observer {
 	JButton optionsButton = new JButton("options");
 	optionsButton.setMnemonic('o');
 
+	JButton aboutButton = new JButton("about", iconCache.getImageIcon(IconCache.IconId.INFO_ICON));
+	aboutButton.addActionListener(e -> {
+	    aboutDialog.openCentered();
+	});
+
 	optionsButton.setMnemonic('o');
 	JPanel buttonPanel = new JPanel(new GridLayout(1, 0));
 	buttonPanel.add(deleteButton);
 	buttonPanel.add(commentButton);
 	buttonPanel.add(optionsButton);
 	buttonPanel.add(helpButton);
+	buttonPanel.add(aboutButton);
 
 	mainGui.add(infoPanel, BorderLayout.NORTH);
 	mainGui.add(centerPanel, BorderLayout.CENTER);
@@ -116,7 +137,7 @@ public class GUI extends JFrame implements Observer {
 	return mainGui;
     }
 
-    private void initAndDisplay(String pathToConfig) throws IOException, URISyntaxException, NativeHookException, SQLException, ClassNotFoundException {
+    private void initAndDisplay(Properties properties) throws IOException, URISyntaxException, NativeHookException, SQLException, ClassNotFoundException {
 
 	cardLayout = new CardLayout();
 	getContentPane().setLayout(cardLayout);
@@ -155,17 +176,6 @@ public class GUI extends JFrame implements Observer {
 	    }
 	});
 
-	getContentPane().add(openAuthButton, "openAuthButton");
-	getContentPane().add(createMainGui(), "mainGui");
-
-	cardLayout.show(getContentPane(), "openAuthButton");
-//	cardLayout.show(getContentPane(),"mainGui");
-
-	try(FileInputStream configStream = new FileInputStream(pathToConfig)){
-	    properties = new Properties();
-	    properties.load(configStream);
-	}
-
 	int callbackPort = new URI(properties.getProperty("callback_url")).getPort();
 	String authUrl = properties.getProperty("auth_url");
 	String apiUrl = properties.getProperty("api_url");
@@ -175,6 +185,16 @@ public class GUI extends JFrame implements Observer {
 	controller = new Controller(callbackPort, authUrl, apiUrl, clientId, clientSecret);
 	controller.addObserver(this);
 	controller.init();
+	
+	historyPanel = new HistoryPanel(controller.getModel());
+
+	aboutDialog = new AboutDialog(this);
+	
+	getContentPane().add(openAuthButton, "openAuthButton");
+	getContentPane().add(createMainGui(), "mainGui");
+
+	cardLayout.show(getContentPane(), "openAuthButton");
+//	cardLayout.show(getContentPane(),"mainGui");
 
 	setFocusable(false);
 	setAlwaysOnTop(true);
@@ -198,12 +218,13 @@ public class GUI extends JFrame implements Observer {
 	catch (Exception ex) {
 	    LOGGER.fatal("error while settings look and feel.", ex);
 	}
-	try {
-	    if (args.length == 0) {
-		throw new Exception("missing path to the configuration file.");
-	    }
+	try (InputStream inputStream = args.length == 0 ? GUI.class.getClassLoader().getResourceAsStream("config.properties") : new FileInputStream(args[0])){
+
+	    Properties properties = new Properties();
+	    properties.load(inputStream);
+	    
 	    LOGGER.debug("starting GUI.");
-	    new GUI().initAndDisplay(args[0]);
+	    new GUI().initAndDisplay(properties);
 	}
 	catch (ClassNotFoundException ex) {
 	    LOGGER.fatal("unable to load database driver. please check your classpath!", ex);
@@ -249,11 +270,27 @@ public class GUI extends JFrame implements Observer {
 			LOGGER.info("got complete character data.");
 			infoPanel.setIcon(character);
 			break;
+		    case SOLAR_SYSTEM_CHANGE:
+			infoPanel.setCurrentSolarSystem((SolarSystem) event.getPayload());
+			historyPanel.repaintList();
+			soundManager.playSound(SoundManager.SoundId.NOTIFICATION_SOLAR_SYSTEM_CHANGE);
+			break;
 		}
 	    }
 	}
 	catch (Exception ex) {
 	    LOGGER.error("error while handling event!", ex);
+	}
+    }
+
+    public static class SolarSystemRenderer extends DefaultListCellRenderer {
+
+	@Override
+	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+	    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+	    SolarSystem solarSystem = (SolarSystem) value;
+	    label.setText(solarSystem.getName());
+	    return label;
 	}
     }
 }
