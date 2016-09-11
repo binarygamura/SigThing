@@ -18,7 +18,7 @@ public class SimpleForm extends JPanel {
     public SimpleForm() {
 	super(new GridBagLayout());
 	c = new GridBagConstraints();
-	c.insets = new Insets(5, 5, 5, 5);
+	c.insets = new Insets(2, 5, 2, 5);
 	c.gridx = 0;
 	c.gridy = -1;
 	c.gridheight = 1;

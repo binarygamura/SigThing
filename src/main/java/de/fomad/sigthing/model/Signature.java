@@ -14,14 +14,22 @@ public class Signature {
 
     private float signalStrength;
 
-    private String solarSystemName;
-
     private int solarSystemId;
+
+    private String addedBy;
 
     public String getSignature() {
 	return signature;
     }
 
+    public String getAddedBy() {
+        return addedBy;
+    }
+
+    public void setAddedBy(String addedBy) {
+        this.addedBy = addedBy;
+    }
+    
     public void setSignature(String signature) {
 	this.signature = signature;
     }
@@ -48,14 +56,6 @@ public class Signature {
 
     public void setSignalStrength(float signalStrength) {
 	this.signalStrength = signalStrength;
-    }
-
-    public String getSolarSystemName() {
-	return solarSystemName;
-    }
-
-    public void setSolarSystemName(String solarSystemName) {
-	this.solarSystemName = solarSystemName;
     }
 
     public int getSolarSystemId() {

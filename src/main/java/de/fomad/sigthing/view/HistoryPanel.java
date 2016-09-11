@@ -5,6 +5,9 @@ import de.fomad.sigthing.model.SolarSystem;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -19,13 +22,13 @@ import javax.swing.JScrollPane;
  */
 public class HistoryPanel extends JPanel {
 
-    private final JList<SolarSystem> history;
+    private final JList<HistoryNode> history;
 
-    private static final int DEFAULT_WIDTH = 200;
+    private static final int DEFAULT_WIDTH = 185;
 
     private final Model model;
     
-    private DefaultListModel<SolarSystem> listModel;
+    private final DefaultListModel<HistoryNode> listModel;
     
     public HistoryPanel(Model model) {
 	super(new BorderLayout());
@@ -46,7 +49,7 @@ public class HistoryPanel extends JPanel {
 	int selectedIndex = history.getSelectedIndex();
 	listModel.clear();
 	model.getTravelRoute().stream().forEach((solarSystem) -> {
-	    listModel.addElement(solarSystem);
+	    listModel.addElement(new HistoryNode(solarSystem));
 	});
 	history.setSelectedIndex(selectedIndex);
 	history.validate();
@@ -55,12 +58,29 @@ public class HistoryPanel extends JPanel {
 
     public static class SolarSystemRenderer extends DefaultListCellRenderer {
 
+        private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        
 	@Override
 	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 	    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-	    SolarSystem solarSystem = (SolarSystem) value;
-	    label.setText(solarSystem.getName());
+	    HistoryNode historyNode = (HistoryNode) value;
+            StringBuilder builder = new StringBuilder("<html><b>");
+            builder.append(historyNode.solarSystem.getName());
+            builder.append("</b>").append("<br><i>");
+            builder.append(dateFormat.format(historyNode.added)).append("</i>");
+	    label.setText(builder.toString());
 	    return label;
 	}
+    }
+    
+    private static class HistoryNode {
+        private final Date added;
+        
+        private final SolarSystem solarSystem;
+        
+        private HistoryNode(SolarSystem solarSystem){            
+            this.solarSystem = solarSystem;
+            added = new Date();
+        }
     }
 }

@@ -47,6 +47,10 @@ public class IconCache {
 	
 	INFO_ICON("information_16.png"),
 	
+        CONFIGURATION("server_configuration_16.png"),
+        
+        COMMENT("pencil_16.png"),
+        
 	APP_ICON("gingerbread_man_chocolate_16.png");
 	
 	private final String file;

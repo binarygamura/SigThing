@@ -1,6 +1,8 @@
 package de.fomad.sigthing.view;
 
+import de.fomad.sigthing.controller.ConfigUtility;
 import de.fomad.sigthing.controller.Controller;
+import de.fomad.sigthing.model.ApplicationConfiguration;
 import de.fomad.sigthing.model.CharacterInfo;
 import de.fomad.sigthing.model.ControllerEvent;
 import java.awt.BorderLayout;
@@ -36,6 +38,7 @@ import de.fomad.sigthing.model.SolarSystem;
 import de.fomad.sigthing.view.icons.IconCache;
 import de.fomad.sigthing.view.sounds.SoundManager;
 import java.awt.Component;
+import java.beans.PropertyVetoException;
 import java.io.InputStream;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JDialog;
@@ -58,28 +61,48 @@ public class GUI extends JFrame implements Observer {
 
     private HistoryPanel historyPanel;
 
-    private static final String TITLE = "SigThing";
+    private static final String TITLE = "Sig Thing";
 
     private final IconCache iconCache;
 
     private AboutDialog aboutDialog;
     
+    private OptionDialog configurationDialog;
+    
+    private SignatureTable table;
+    
     private final SoundManager soundManager;
+    
+    private final ApplicationConfiguration configuration;
     
     private GUI() {
 	super(TITLE);
-	soundManager = new SoundManager();
+	
 	iconCache = new IconCache();
+        configuration = new ApplicationConfiguration();
+        soundManager = new SoundManager(configuration);
 	setIconImage(iconCache.getIcon(IconCache.IconId.APP_ICON));
 	GUI.this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	GUI.this.addWindowListener(new WindowAdapter() {
 	    @Override
 	    public void windowClosing(WindowEvent e) {
-		exitOperation();
+                
+                try
+                {
+                    ConfigUtility.writeConfig(configuration);
+                }
+                catch(IOException ex){
+                    LOGGER.warn("unable to save configuration.", ex);
+                }
+                exitOperation();
 	    }
 	});
     }
 
+    ApplicationConfiguration getConfig(){
+        return configuration;
+    }
+    
     IconCache getIconCache() {
 	return iconCache;
     }
@@ -101,32 +124,36 @@ public class GUI extends JFrame implements Observer {
 	
 	infoPanel = new InfoPanel();
 
-	JScrollPane centerPanel = new JScrollPane();
+        table = new SignatureTable();
+        
+	JScrollPane centerPanel = new JScrollPane(table);
 	centerPanel.setBorder(BorderFactory.createTitledBorder("current system"));
 
-	JButton helpButton = new JButton("help");
-	helpButton.setMnemonic('h');
+//	JButton helpButton = new JButton("help");
+//	helpButton.setMnemonic('h');
 
-	JButton deleteButton = new JButton("delete");
+	JButton deleteButton = new JButton("delete", iconCache.getImageIcon(IconCache.IconId.CANCEL_ICON));
 	deleteButton.setMnemonic('d');
 
-	JButton commentButton = new JButton("comment");
+	JButton commentButton = new JButton("comment", iconCache.getImageIcon(IconCache.IconId.COMMENT));
 	commentButton.setMnemonic('c');
 
-	JButton optionsButton = new JButton("options");
+	JButton optionsButton = new JButton("options", iconCache.getImageIcon(IconCache.IconId.CONFIGURATION));
+        optionsButton.addActionListener(e -> {configurationDialog.openCentered(); initAlwaysOnTop();});
 	optionsButton.setMnemonic('o');
 
 	JButton aboutButton = new JButton("about", iconCache.getImageIcon(IconCache.IconId.INFO_ICON));
 	aboutButton.addActionListener(e -> {
 	    aboutDialog.openCentered();
 	});
+        aboutButton.setMnemonic('a');
 
 	optionsButton.setMnemonic('o');
 	JPanel buttonPanel = new JPanel(new GridLayout(1, 0));
 	buttonPanel.add(deleteButton);
 	buttonPanel.add(commentButton);
 	buttonPanel.add(optionsButton);
-	buttonPanel.add(helpButton);
+//	buttonPanel.add(helpButton);
 	buttonPanel.add(aboutButton);
 
 	mainGui.add(infoPanel, BorderLayout.NORTH);
@@ -137,11 +164,17 @@ public class GUI extends JFrame implements Observer {
 	return mainGui;
     }
 
-    private void initAndDisplay(Properties properties) throws IOException, URISyntaxException, NativeHookException, SQLException, ClassNotFoundException {
+    private void initAndDisplay(Properties properties) throws IOException, URISyntaxException, NativeHookException, SQLException, ClassNotFoundException, PropertyVetoException {
 
 	cardLayout = new CardLayout();
 	getContentPane().setLayout(cardLayout);
-
+        
+        try{
+            ConfigUtility.readConfig(configuration);
+        }
+        catch(IOException ex){
+            LOGGER.warn("unable to read configuration. using defaults.", ex);
+        }
 	JButton openAuthButton = new JButton("login with eve");
 	openAuthButton.addActionListener((e) -> {
 	    try {
@@ -189,6 +222,7 @@ public class GUI extends JFrame implements Observer {
 	historyPanel = new HistoryPanel(controller.getModel());
 
 	aboutDialog = new AboutDialog(this);
+        configurationDialog = new OptionDialog(this);
 	
 	getContentPane().add(openAuthButton, "openAuthButton");
 	getContentPane().add(createMainGui(), "mainGui");
@@ -196,15 +230,23 @@ public class GUI extends JFrame implements Observer {
 	cardLayout.show(getContentPane(), "openAuthButton");
 //	cardLayout.show(getContentPane(),"mainGui");
 
-	setFocusable(false);
-	setAlwaysOnTop(true);
-	toFront();
+        
+        
+	initAlwaysOnTop();
+        toFront();
 
 	setMinimumSize(new Dimension(640, 480));
+        setPreferredSize(new Dimension(640, 480));
 	validate();
 	pack();
 	setLocationRelativeTo(null);
 	setVisible(true);
+    }
+    
+    private void initAlwaysOnTop(){
+        boolean alwaysOnTop = configuration.isAlwaysOnTop();
+        setFocusable(!alwaysOnTop);
+	setAlwaysOnTop(alwaysOnTop);
     }
 
     public static void main(String[] args) {

@@ -18,6 +18,9 @@ import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import de.fomad.sigthing.model.Character;
 import de.fomad.sigthing.model.LocationPollerEvent;
+import de.fomad.sigthing.model.SolarSystem;
+import de.fomad.sigthing.model.SolarSystemInformation;
+import java.beans.PropertyVetoException;
 
 /**
  *
@@ -40,6 +43,8 @@ public class Controller extends Observable implements Observer {
     private final String authUrl;
 
     private final String apiUrl;
+    
+    private KeyLogger keyLogger;
 
     public Controller(int callbackPort, String authUrl, String apiUrl, String clientId, String clientSecret) throws URISyntaxException {
 
@@ -69,13 +74,22 @@ public class Controller extends Observable implements Observer {
 	}
     }
 
+    
+    private void querySolarSystemInformation(SolarSystem solarSystem) throws URISyntaxException, IOException{
+        URI dataUri = new URI(apiUrl+"/solarsystems/"+solarSystem.getId()+"/");
+        SolarSystemInformation solarSystemInfo = httpController.makeApiRequest(dataUri, SolarSystemInformation.class, false);
+        solarSystem.setInformation(solarSystemInfo);
+    }
+    
     private void queryCharacterSheet() throws URISyntaxException, IOException {
 	URI dataUri = new URI(apiUrl + "/characters/" + model.getCharacterInfo().getId() + "/");
-	Character characterData = httpController.makeApiRequest(dataUri, Character.class);
+	Character characterData = httpController.makeApiRequest(dataUri, Character.class, true);
 	model.setCharacter(characterData);
 	fireControllerEvent(characterData, ControllerEvent.EventType.GOT_CHARACTER);
     }
 
+//    private 
+    
     private void fireControllerEvent(Object payload, ControllerEvent.EventType type) {
 	setChanged();
 	notifyObservers(new ControllerEvent(payload, type));
@@ -83,7 +97,7 @@ public class Controller extends Observable implements Observer {
 
     private void queryCharacterInformation() throws URISyntaxException, IOException {
 	URI verifyUri = new URI(authUrl + "/verify");
-	CharacterInfo info = httpController.makeApiRequest(verifyUri, CharacterInfo.class);
+	CharacterInfo info = httpController.makeApiRequest(verifyUri, CharacterInfo.class, true);
 	model.setCharacterInfo(info);
 	fireControllerEvent(info, ControllerEvent.EventType.GOT_CHARACTER_INFO);
     }
@@ -111,12 +125,18 @@ public class Controller extends Observable implements Observer {
 			break;
 		}
 	    }
+            else if(o == keyLogger){
+                
+            }
 	    else if(o == locationPoller){
 		LocationPollerEvent event = (LocationPollerEvent) arg;
-		databaseController.save(event.getNewLocation());
-		model.addSolarSystemToTravelRoute(event.getNewLocation());
+                SolarSystem newLocation = event.getNewLocation();
+                querySolarSystemInformation(newLocation);
+		databaseController.save(newLocation);
+                
+		model.addSolarSystemToTravelRoute(newLocation);
 		setChanged();
-		notifyObservers(new ControllerEvent<>(event.getNewLocation(), ControllerEvent.EventType.SOLAR_SYSTEM_CHANGE));
+		notifyObservers(new ControllerEvent<>(newLocation, ControllerEvent.EventType.SOLAR_SYSTEM_CHANGE));
 	    }
 	}
 	catch (SQLException | URISyntaxException | IOException ex) {
@@ -127,13 +147,13 @@ public class Controller extends Observable implements Observer {
 	}
     }
 
-    public void init() throws NativeHookException, ClassNotFoundException, SQLException {
+    public void init() throws NativeHookException, ClassNotFoundException, SQLException, PropertyVetoException {
 	//turn off debug logging from JNativeHook. great lib btw!
 	java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GlobalScreen.class.getPackage().getName());
 	logger.setLevel(Level.WARNING);
 	GlobalScreen.registerNativeHook();
 
-	KeyLogger keyLogger = new KeyLogger();
+	keyLogger = new KeyLogger();
 
 	GlobalScreen.addNativeKeyListener(keyLogger);
 	LOGGER.info("initialized key logger");

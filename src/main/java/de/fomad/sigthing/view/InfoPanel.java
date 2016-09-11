@@ -8,11 +8,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import de.fomad.sigthing.model.Character;
 import de.fomad.sigthing.model.SolarSystem;
-import java.awt.Component;
 import java.net.MalformedURLException;
-import javax.swing.DefaultListCellRenderer;
+import java.text.DecimalFormat;
 import javax.swing.ImageIcon;
-import javax.swing.JList;
 
 /**
  *
@@ -31,15 +29,19 @@ public class InfoPanel extends JPanel {
     private JTextField solarSystemNameField;
 
     private JTextField securityStatusField;
+    
+    private final DecimalFormat decimalFormat;
 
     public InfoPanel() {
 	super(new BorderLayout());
+        decimalFormat = new DecimalFormat("0.0"); 
 	init();
     }
     
     public void setCurrentSolarSystem(SolarSystem solarSystem){
 	solarSystemNameField.setText(solarSystem.getName());
 	solarSystemNameField.setCaretPosition(0);
+        securityStatusField.setText(decimalFormat.format(solarSystem.getInformation().getSecurityStatus()));
     }
 
     private void init() {

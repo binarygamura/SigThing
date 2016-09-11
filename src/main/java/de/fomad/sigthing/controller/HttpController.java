@@ -123,7 +123,7 @@ public class HttpController {
 	}
     }
 
-    public <T> T makeApiRequest(URI target, Class<T> responseType) throws IOException, UnsupportedEncodingException {
+    public <T> T makeApiRequest(URI target, Class<T> responseType, boolean useAuth) throws IOException, UnsupportedEncodingException {
 
 	if (!authData.hasAccessToken()) {
 	    retrieveAccessToken(false);
@@ -132,11 +132,13 @@ public class HttpController {
 	    retrieveAccessToken(true);
 	}
 
-	HttpUriRequest request = RequestBuilder
+	RequestBuilder builder = RequestBuilder
 		.get()
-		.addHeader(new BasicHeader("Authorization", "Bearer " + authData.getAccessToken()))
-		.setUri(target)
-		.build();
+		.setUri(target);
+        if(useAuth){
+            builder.addHeader(new BasicHeader("Authorization", "Bearer " + authData.getAccessToken()));
+        }
+        HttpUriRequest request = builder.build();
 	try (CloseableHttpResponse response = httpClient.execute(request)) {
 	    if (response.getStatusLine().getStatusCode() != 200) {
 		String responseMessage = EntityUtils.toString(response.getEntity());

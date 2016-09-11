@@ -40,7 +40,6 @@ public class KeyLogger extends Observable implements NativeKeyListener {
 		    if (System.currentTimeMillis() < lastKeyPress + ONE_SECOND) {
 			String data = (String) Toolkit.getDefaultToolkit()
 				.getSystemClipboard().getData(DataFlavor.stringFlavor);
-			LOGGER.info("HIT " + data);
 			setChanged();
 			notifyObservers(new KeyLoggerEvent(data));
 		    }

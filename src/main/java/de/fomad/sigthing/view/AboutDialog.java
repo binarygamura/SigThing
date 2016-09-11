@@ -2,6 +2,7 @@ package de.fomad.sigthing.view;
 
 import de.fomad.sigthing.view.icons.IconCache;
 import java.awt.BorderLayout;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -13,7 +14,6 @@ import javax.swing.JLabel;
 public final class AboutDialog extends JDialog {
     
     private final GUI parent;
-    
     
     private static final String markup = "<html>\n" +
 	"<h1>SigThing</h1><p>SigThing is a small tool for players of the awesome mmorpg EVE-Online which allows them to track their path<br>"
@@ -39,21 +39,24 @@ public final class AboutDialog extends JDialog {
 	"</html>";
     
     public AboutDialog(GUI parent){
-	super(parent);
+	super(parent, "About");
 	setIconImage(parent.getIconCache().getIcon(IconCache.IconId.INFO_ICON));
-	setTitle("About");
 	this.parent = parent;
 	init();
     }
     
     private void init(){
+        setModal(true);
+        setResizable(false);
 	setLayout(new BorderLayout());
 	setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 	
 	JButton closeButton = new JButton("close", parent.getIconCache().getImageIcon(IconCache.IconId.CANCEL_ICON));	
 	closeButton.addActionListener(e -> {setVisible(false);});
+        closeButton.setMnemonic('c');
 	
 	JLabel textLabel = new JLabel(markup);
+        textLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 	
 	add(textLabel, BorderLayout.CENTER);
 	add(closeButton, BorderLayout.SOUTH);

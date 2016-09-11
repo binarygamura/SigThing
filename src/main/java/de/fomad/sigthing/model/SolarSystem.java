@@ -1,5 +1,6 @@
 package de.fomad.sigthing.model;
 
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -11,6 +12,28 @@ public class SolarSystem extends Reference {
     private int id;
 
     private String name;
+    
+    private SolarSystemInformation information;
+
+    private final Date created;
+    
+    public SolarSystem(){
+        created = new Date();
+    }
+
+    public Date getCreated() {
+        return new Date(created.getTime());
+    }
+    
+    
+    
+    public SolarSystemInformation getInformation() {
+        return information;
+    }
+
+    public void setInformation(SolarSystemInformation information) {
+        this.information = information;
+    }
 
     public int getId() {
 	return id;
