@@ -34,12 +34,15 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jnativehook.NativeHookException;
 import de.fomad.sigthing.model.Character;
+import de.fomad.sigthing.model.Signature;
 import de.fomad.sigthing.model.SolarSystem;
 import de.fomad.sigthing.view.icons.IconCache;
 import de.fomad.sigthing.view.sounds.SoundManager;
 import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -313,14 +316,19 @@ public class GUI extends JFrame implements Observer {
 			infoPanel.setIcon(character);
 			break;
 		    case SOLAR_SYSTEM_CHANGE:
+                        table.setData(controller.getSignaturesForCurrentSystem());
 			infoPanel.setCurrentSolarSystem((SolarSystem) event.getPayload());
 			historyPanel.repaintList();
 			soundManager.playSound(SoundManager.SoundId.NOTIFICATION_SOLAR_SYSTEM_CHANGE);
 			break;
+                    case NEW_SIGNATURES:
+                        table.setData(controller.getSignaturesForCurrentSystem());
+                        soundManager.playSound(SoundManager.SoundId.NOTIFICATION_NEW_SIGNATURES);
+                        break;
 		}
 	    }
 	}
-	catch (Exception ex) {
+	catch (MalformedURLException | SQLException ex) {
 	    LOGGER.error("error while handling event!", ex);
 	}
     }

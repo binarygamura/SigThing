@@ -26,4 +26,5 @@ This Free software! Dont blame me, if this app kills your hardware, software, yo
 I use media and stuff from other people:
 
 - Text Message Alert 5 Sound from Daniel Simion, taken from [soundbible](http://soundbible.com/2158-Text-Message-Alert-5.html)
+- Text Message Alert 1 Sound from Daniel Simion, taken from [soundbible](http://soundbible.com/2158-Text-Message-Alert-1.html)
 - Awesome Free Icon Set from [fatcow](http://www.fatcow.com/free-icons)

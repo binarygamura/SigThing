@@ -49,7 +49,9 @@ public class SoundManager {
 
     public enum SoundId {
 
-	NOTIFICATION_SOLAR_SYSTEM_CHANGE("sms-alert-5-daniel_simon.wav");
+	NOTIFICATION_SOLAR_SYSTEM_CHANGE("sms-alert-5-daniel_simon.wav"),
+        
+        NOTIFICATION_NEW_SIGNATURES("sms-alert-1-daniel_simon.wav");
 
 	private String file;
 

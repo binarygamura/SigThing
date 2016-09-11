@@ -16,12 +16,19 @@ public class Model {
     private Character character;
     
     private final List<SolarSystem> travelRoute;
+    
+    private SolarSystem currentSystem;
 
     public Model() {
 	travelRoute = new ArrayList<>(MAX_TRAVEL_ROUTE_SIZE);	
     }
+
+    public SolarSystem getCurrentSystem() {
+        return currentSystem;
+    }
     
     public void addSolarSystemToTravelRoute(SolarSystem solarSystem){
+        currentSystem = solarSystem;
 	travelRoute.add(0, solarSystem);
 	if(travelRoute.size() > MAX_TRAVEL_ROUTE_SIZE){
 	    travelRoute.remove(MAX_TRAVEL_ROUTE_SIZE);

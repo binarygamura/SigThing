@@ -1,6 +1,9 @@
 package de.fomad.sigthing.view;
 
 import de.fomad.sigthing.model.Signature;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
@@ -17,19 +20,20 @@ public class SignatureTable extends JTable {
         tableModel = new SignatureTableModel();
         getTableHeader().setReorderingAllowed(false);
         setModel(tableModel);
+        setSelectionMode(DefaultListSelectionModel.SINGLE_SELECTION);
     }
     
-    public void setData(Signature[] signatures){
+    public void setData(List<Signature> signatures){
         ((SignatureTableModel) getModel()).mergeData(signatures);
     }
     
     
     private static class SignatureTableModel extends DefaultTableModel{
         
-        private Signature[] signatures;
+        private List<Signature> signatures;
 
         private SignatureTableModel() {
-            signatures = new Signature[0];
+            signatures = Collections.EMPTY_LIST;
         }
 
         @Override
@@ -47,9 +51,39 @@ public class SignatureTable extends JTable {
                     return "unknown!";
             }
         }
+
+        @Override
+        public Object getValueAt(int row, int column) {
+            Object result = "";
+            if(row < signatures.size()){
+                Signature signature = signatures.get(row);
+                switch(column){
+                    case 0:
+                        result = signature.getSignature();
+                        break;
+                    case 1:
+                        if(signature.getName().isEmpty()){
+                            result = signature.getScanGroup();
+                        }
+                        else {
+                            result = signature.getName();
+                        }
+                        
+                        break;
+                    case 2:
+                        result = signature.getScanGroup();
+                        break;
+                    case 3:
+                        result = signature.getSignalStrength();
+                        break;
+                }
+            }
+            return result;
+        }
         
-        private void mergeData(Signature[] signatures){
-            
+        private void mergeData(List<Signature> signatures){
+            this.signatures = signatures;
+            fireTableDataChanged();
         }
 
         @Override
@@ -59,7 +93,7 @@ public class SignatureTable extends JTable {
 
         @Override
         public int getRowCount() {
-            return signatures == null ? 0 : signatures.length;
+            return signatures == null ? 0 : signatures.size();
         }
     }
 }

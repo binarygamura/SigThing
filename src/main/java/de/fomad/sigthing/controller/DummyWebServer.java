@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
@@ -40,7 +41,7 @@ public class DummyWebServer extends Observable implements Runnable {
     public boolean startListening() throws IOException {
 	boolean wasStarted = false;
 	if (thread == null) {
-	    LOGGER.info("starting webserver thread on port " + port);
+	    LOGGER.info("starting local webserver thread on port " + port);
 	    socket = new ServerSocket(port);
 	    thread = new Thread(this);
 	    thread.start();

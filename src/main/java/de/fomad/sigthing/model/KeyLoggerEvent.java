@@ -6,7 +6,7 @@ package de.fomad.sigthing.model;
  */
 public class KeyLoggerEvent {
 
-    public String input;
+    private String input;
 
     public KeyLoggerEvent(String input) {
 	this.input = input;

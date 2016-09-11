@@ -17,10 +17,14 @@ import org.apache.log4j.Logger;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import de.fomad.sigthing.model.Character;
+import de.fomad.sigthing.model.KeyLoggerEvent;
 import de.fomad.sigthing.model.LocationPollerEvent;
+import de.fomad.sigthing.model.Signature;
 import de.fomad.sigthing.model.SolarSystem;
 import de.fomad.sigthing.model.SolarSystemInformation;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -73,7 +77,35 @@ public class Controller extends Observable implements Observer {
 	    LOGGER.info("webserver is already listening.");
 	}
     }
+    
+    public List<Signature> getSignaturesForCurrentSystem() throws SQLException{
+        return databaseController.querySignaturesFor(model.getCurrentSystem().getId());
+    }
 
+    private List<Signature> parseSignatures(String data, int solarSystemId){
+        Signature signature;
+        String strengthString;
+        String[] columns;
+        List<Signature> signatures = new ArrayList<>();
+        System.out.println(data);
+        String[] lines = data.split("\\n");
+        for(int i = 0; i < lines.length; i++){
+            columns = lines[i].split("\\t");
+            if(columns.length == 6 && columns[1].equalsIgnoreCase("Cosmic Signature")){
+                
+                strengthString = columns[4].substring(0, columns[4].length() - 1).replace(',','.');
+                
+                signature = new Signature();
+                signature.setSignature(columns[0].trim());
+                signature.setScanGroup(columns[2].trim());
+                signature.setName(columns[3].trim());
+                signature.setSignalStrength(Float.valueOf(strengthString));
+                signature.setSolarSystemId(solarSystemId);
+                signatures.add(signature);
+            }
+        }
+        return signatures;
+    }
     
     private void querySolarSystemInformation(SolarSystem solarSystem) throws URISyntaxException, IOException{
         URI dataUri = new URI(apiUrl+"/solarsystems/"+solarSystem.getId()+"/");
@@ -88,8 +120,6 @@ public class Controller extends Observable implements Observer {
 	fireControllerEvent(characterData, ControllerEvent.EventType.GOT_CHARACTER);
     }
 
-//    private 
-    
     private void fireControllerEvent(Object payload, ControllerEvent.EventType type) {
 	setChanged();
 	notifyObservers(new ControllerEvent(payload, type));
@@ -126,13 +156,23 @@ public class Controller extends Observable implements Observer {
 		}
 	    }
             else if(o == keyLogger){
-                
+                KeyLoggerEvent event = (KeyLoggerEvent) arg;
+                SolarSystem currentSystem = model.getCurrentSystem();
+                if(currentSystem != null){
+                    List<Signature> parsedSignatures = parseSignatures(event.getInput(), currentSystem.getId());
+                    
+                    
+                    databaseController.mergeSignatures(parsedSignatures, model.getCharacter(), currentSystem.getId());
+                    ControllerEvent locationEvent = new ControllerEvent(currentSystem, ControllerEvent.EventType.NEW_SIGNATURES);
+                    setChanged();
+                    notifyObservers(locationEvent);
+                }
             }
 	    else if(o == locationPoller){
 		LocationPollerEvent event = (LocationPollerEvent) arg;
                 SolarSystem newLocation = event.getNewLocation();
                 querySolarSystemInformation(newLocation);
-		databaseController.save(newLocation);
+		databaseController.save(newLocation, model.getCharacter());
                 
 		model.addSolarSystemToTravelRoute(newLocation);
 		setChanged();
@@ -154,6 +194,7 @@ public class Controller extends Observable implements Observer {
 	GlobalScreen.registerNativeHook();
 
 	keyLogger = new KeyLogger();
+        keyLogger.addObserver(this);
 
 	GlobalScreen.addNativeKeyListener(keyLogger);
 	LOGGER.info("initialized key logger");
