@@ -45,8 +45,8 @@ public class DatabaseController {
 
     private void createStructure() throws SQLException {
 	String[] initQueries = new String[]{
-	    "CREATE TABLE IF NOT EXISTS solar_systems (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, name VARCHAR(255) UNIQUE, added_by VARCHAR(255))",
-	    "CREATE TABLE IF NOT EXISTS signatures (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, signature VARCHAR(255), scan_group VARCHAR(255), signal_strength FLOAT, solar_system_id INT, name VARCHAR(255), added_by VARCHAR(255) )",
+	    "CREATE TABLE IF NOT EXISTS solar_systems (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, name VARCHAR(255) UNIQUE, added_by VARCHAR(255), comment TEXT)",
+	    "CREATE TABLE IF NOT EXISTS signatures (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, signature VARCHAR(255), scan_group VARCHAR(255), signal_strength FLOAT, solar_system_id INT, name VARCHAR(255), added_by VARCHAR(255), comment TEXT )",
 	    "CREATE TABLE IF NOT EXISTS pilots (id INT PRIMARY KEY NOT NULL, character_name VARCHAR(255) UNIQUE) "};
 	try (Connection connection = databasePool.getConnection(); Statement statement = connection.createStatement()) {
 	    for (String query : initQueries) {
@@ -65,6 +65,7 @@ public class DatabaseController {
         signature.setSolarSystemId(result.getInt("solar_system_id"));
         signature.setAddedBy(result.getString("added_by"));
         signature.setScanGroup(result.getString("scan_group"));
+        signature.setComment(result.getString("comment"));
         return signature;
     }
     
@@ -74,8 +75,17 @@ public class DatabaseController {
         }
     }
     
+    public void updateComment(Signature signature) throws SQLException{
+        String query = "UPDATE signatures SET comment = ? WHERE id = ?";
+        try(Connection connection = databasePool.getConnection(); PreparedStatement statement = connection.prepareStatement(query)){
+            statement.setString(1, signature.getComment());
+            statement.setInt(2, signature.getId());
+            statement.executeUpdate();
+        }
+    }
+    
     public List<Signature> querySignaturesFor(Connection connection, int solarSystemId) throws SQLException{
-        String query = "SELECT id, name, signature, scan_group, signal_strength, solar_system_id, added_by FROM signatures WHERE solar_system_id = ?";
+        String query = "SELECT comment, id, name, signature, scan_group, signal_strength, solar_system_id, added_by FROM signatures WHERE solar_system_id = ?";
         List<Signature> signatures = new ArrayList<>();
         try(PreparedStatement selectStatement = connection.prepareStatement(query)){
             selectStatement.setInt(1, solarSystemId);
@@ -88,6 +98,12 @@ public class DatabaseController {
         return signatures;
     }
 
+    public void deleteSignature(Signature signature) throws SQLException{
+        try(Connection connection = databasePool.getConnection()){
+            deleteSignature(connection, signature);
+        }
+    }
+    
     private void deleteSignature(Connection connection, Signature signature) throws SQLException{
         String query = "DELETE FROM signatures WHERE id = ?";
         try(PreparedStatement statement = connection.prepareStatement(query)){
@@ -97,7 +113,7 @@ public class DatabaseController {
     }
     
     private void insertSignature(Connection connection, Signature signature) throws SQLException {
-        String query = "INSERT INTO signatures (signature, signal_strength, scan_group, added_by, solar_system_id, name) VALUES(?,?,?,?,?, ?)";
+        String query = "INSERT INTO signatures (signature, signal_strength, scan_group, added_by, solar_system_id, name) VALUES(?,?,?,?,?,?)";
         try(PreparedStatement statement = connection.prepareStatement(query)){
             statement.setString(1, signature.getSignature());
             statement.setFloat(2, signature.getSignalStrength());
@@ -110,19 +126,24 @@ public class DatabaseController {
     }
     
     private void updateSignature(Connection connection, Signature signature) throws SQLException{
-        String query = "UPDATE signatures SET signal_strength = ?, name = ? WHERE id = ? AND signal_strength < ?";
+        String query = "UPDATE signatures SET signal_strength = ?, name = ?, scan_group = ? WHERE signature = ? AND solar_system_id = ? AND signal_strength < ?";
         try(PreparedStatement statement = connection.prepareStatement(query)){
+            
+            String name = signature.getName().isEmpty() ? signature.getScanGroup() : signature.getName();
+            
             statement.setFloat(1, signature.getSignalStrength());
-            statement.setString(2, signature.getName());
-            statement.setInt(3, signature.getId());
-            statement.setFloat(4, signature.getSignalStrength());
+            statement.setString(2, name);
+            statement.setString(3, signature.getScanGroup());
+            statement.setString(4, signature.getSignature());
+            statement.setInt(5, signature.getSolarSystemId());
+            statement.setFloat(6, signature.getSignalStrength());
             statement.executeUpdate();
         }
     }
     
     public void mergeSignatures(List<Signature> signatures, Character character, int solarSystemId) throws SQLException{
         try(Connection connection = databasePool.getConnection()){
-            connection.setAutoCommit(false);
+//            connection.setAutoCommit(false);
             
             List<Signature> currentSignatures = querySignaturesFor(connection, solarSystemId);
 
@@ -144,8 +165,8 @@ public class DatabaseController {
                     insertSignature(connection, signature);
                 }
             }
-            connection.commit();
-            connection.setAutoCommit(true);
+//            connection.commit();
+//            connection.setAutoCommit(true);
         }
     }
     

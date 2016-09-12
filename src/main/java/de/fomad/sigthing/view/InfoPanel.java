@@ -7,6 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import de.fomad.sigthing.model.Character;
+import de.fomad.sigthing.model.Signature;
 import de.fomad.sigthing.model.SolarSystem;
 import java.net.MalformedURLException;
 import java.text.DecimalFormat;
@@ -22,7 +23,7 @@ public class InfoPanel extends JPanel {
 
     private JTextField signalStrenghField;
 
-    private JTextField segmentField;
+    private JTextField signatureScanGroupField;
 
     private JLabel iconLabel;
 
@@ -30,18 +31,34 @@ public class InfoPanel extends JPanel {
 
     private JTextField securityStatusField;
     
-    private final DecimalFormat decimalFormat;
+    private final DecimalFormat secStatusFormat;
+    
+    private final DecimalFormat strenghtFormat;
 
     public InfoPanel() {
 	super(new BorderLayout());
-        decimalFormat = new DecimalFormat("0.0"); 
+        secStatusFormat = new DecimalFormat("0.0"); 
+        strenghtFormat = new DecimalFormat("0.00");
 	init();
+    }
+    
+    public void setCurrentSignature(Signature signature){
+        if(signature == null){
+            signatureField.setText("");
+            signalStrenghField.setText("");
+            signatureScanGroupField.setText("");            
+        }
+        else {
+            signatureField.setText(signature.getSignature());
+            signalStrenghField.setText(strenghtFormat.format(signature.getSignalStrength())+"%");
+            signatureScanGroupField.setText(signature.getScanGroup());
+        }
     }
     
     public void setCurrentSolarSystem(SolarSystem solarSystem){
 	solarSystemNameField.setText(solarSystem.getName());
 	solarSystemNameField.setCaretPosition(0);
-        securityStatusField.setText(decimalFormat.format(solarSystem.getInformation().getSecurityStatus()));
+        securityStatusField.setText(secStatusFormat.format(solarSystem.getInformation().getSecurityStatus()));
     }
 
     private void init() {
@@ -49,8 +66,9 @@ public class InfoPanel extends JPanel {
 	signatureField.setEditable(false);
 	signalStrenghField = new JTextField(10);
 	signalStrenghField.setEditable(false);
-	segmentField = new JTextField(10);
-	segmentField.setEditable(false);
+        signalStrenghField.setHorizontalAlignment(JTextField.RIGHT);
+	signatureScanGroupField = new JTextField(10);
+	signatureScanGroupField.setEditable(false);
 
 	iconLabel = new JLabel();
 	iconLabel.setMinimumSize(new Dimension(156, 156));
@@ -61,6 +79,7 @@ public class InfoPanel extends JPanel {
 	solarSystemNameField = new JTextField(10);
 	solarSystemNameField.setEditable(false);
 	securityStatusField = new JTextField(10);
+        securityStatusField.setHorizontalAlignment(JTextField.RIGHT);
 	securityStatusField.setEditable(false);
 
 	SimpleForm solarSystemForm = new SimpleForm();
@@ -72,7 +91,7 @@ public class InfoPanel extends JPanel {
 	selectedItemForm.setBorder(BorderFactory.createTitledBorder("selected item"));
 	selectedItemForm.addRow("Signature", signatureField);
 	selectedItemForm.addRow("Strenght", signalStrenghField);
-	selectedItemForm.addRow("Segment", segmentField);
+	selectedItemForm.addRow("Scan Group", signatureScanGroupField);
 
 	add(iconLabel, BorderLayout.WEST);
 	add(selectedItemForm, BorderLayout.CENTER);

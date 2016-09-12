@@ -21,7 +21,17 @@ public class Signature {
     private int solarSystemId;
 
     private String addedBy;
+    
+    private String comment;
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+    
     public String getName() {
         return name;
     }
@@ -78,9 +88,12 @@ public class Signature {
 	this.solarSystemId = solarSystemId;
     }
 
+
     @Override
     public int hashCode() {
-        int hash = 5;
+        int hash = 7;
+        hash = 29 * hash + Objects.hashCode(this.signature);
+        hash = 29 * hash + this.solarSystemId;
         return hash;
     }
 
@@ -104,6 +117,7 @@ public class Signature {
         }
         return true;
     }
+    
     
     
     

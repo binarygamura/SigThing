@@ -47,54 +47,56 @@ public class Controller extends Observable implements Observer {
     private final String authUrl;
 
     private final String apiUrl;
-    
+
     private KeyLogger keyLogger;
 
     public Controller(int callbackPort, String authUrl, String apiUrl, String clientId, String clientSecret) throws URISyntaxException {
 
-	this.apiUrl = apiUrl;
-	this.authUrl = authUrl;
+        this.apiUrl = apiUrl;
+        this.authUrl = authUrl;
 
-	model = new Model();
+        model = new Model();
 
-	webserver = new DummyWebServer(callbackPort);
-	webserver.addObserver(Controller.this);
-	httpController = new HttpController(new URI(authUrl + "/token"), clientId, clientSecret);
-	locationPoller = new LocationPoller(model, apiUrl, httpController);
-	locationPoller.addObserver(Controller.this);
+        webserver = new DummyWebServer(callbackPort);
+        webserver.addObserver(Controller.this);
+        httpController = new HttpController(new URI(authUrl + "/token"), clientId, clientSecret);
+        locationPoller = new LocationPoller(model, apiUrl, httpController);
+        locationPoller.addObserver(Controller.this);
+    }
 
+    public DatabaseController getDatabaseController() {
+        return databaseController;
     }
 
     public Model getModel() {
-	return model;
+        return model;
     }
 
     public void startLoginProcess() throws IOException {
-	if (webserver.startListening()) {
-	    LOGGER.info("start listening for redirect from local browser.");
-	}
-	else {
-	    LOGGER.info("webserver is already listening.");
-	}
+        if (webserver.startListening()) {
+            LOGGER.info("start listening for redirect from local browser.");
+        } else {
+            LOGGER.info("webserver is already listening.");
+        }
     }
-    
-    public List<Signature> getSignaturesForCurrentSystem() throws SQLException{
+
+    public List<Signature> getSignaturesForCurrentSystem() throws SQLException {
         return databaseController.querySignaturesFor(model.getCurrentSystem().getId());
     }
 
-    private List<Signature> parseSignatures(String data, int solarSystemId){
+    private List<Signature> parseSignatures(String data, int solarSystemId) {
         Signature signature;
         String strengthString;
         String[] columns;
         List<Signature> signatures = new ArrayList<>();
         System.out.println(data);
         String[] lines = data.split("\\n");
-        for(int i = 0; i < lines.length; i++){
+        for (int i = 0; i < lines.length; i++) {
             columns = lines[i].split("\\t");
-            if(columns.length == 6 && columns[1].equalsIgnoreCase("Cosmic Signature")){
-                
-                strengthString = columns[4].substring(0, columns[4].length() - 1).replace(',','.');
-                
+            if (columns.length == 6 && columns[1].equalsIgnoreCase("Cosmic Signature")) {
+
+                strengthString = columns[4].substring(0, columns[4].length() - 1).replace(',', '.');
+
                 signature = new Signature();
                 signature.setSignature(columns[0].trim());
                 signature.setScanGroup(columns[2].trim());
@@ -106,114 +108,109 @@ public class Controller extends Observable implements Observer {
         }
         return signatures;
     }
-    
-    private void querySolarSystemInformation(SolarSystem solarSystem) throws URISyntaxException, IOException{
-        URI dataUri = new URI(apiUrl+"/solarsystems/"+solarSystem.getId()+"/");
+
+    private void querySolarSystemInformation(SolarSystem solarSystem) throws URISyntaxException, IOException {
+        URI dataUri = new URI(apiUrl + "/solarsystems/" + solarSystem.getId() + "/");
         SolarSystemInformation solarSystemInfo = httpController.makeApiRequest(dataUri, SolarSystemInformation.class, false);
         solarSystem.setInformation(solarSystemInfo);
     }
-    
+
     private void queryCharacterSheet() throws URISyntaxException, IOException {
-	URI dataUri = new URI(apiUrl + "/characters/" + model.getCharacterInfo().getId() + "/");
-	Character characterData = httpController.makeApiRequest(dataUri, Character.class, true);
-	model.setCharacter(characterData);
-	fireControllerEvent(characterData, ControllerEvent.EventType.GOT_CHARACTER);
+        URI dataUri = new URI(apiUrl + "/characters/" + model.getCharacterInfo().getId() + "/");
+        Character characterData = httpController.makeApiRequest(dataUri, Character.class, true);
+        model.setCharacter(characterData);
+        fireControllerEvent(characterData, ControllerEvent.EventType.GOT_CHARACTER);
     }
 
     private void fireControllerEvent(Object payload, ControllerEvent.EventType type) {
-	setChanged();
-	notifyObservers(new ControllerEvent(payload, type));
+        setChanged();
+        notifyObservers(new ControllerEvent(payload, type));
     }
 
     private void queryCharacterInformation() throws URISyntaxException, IOException {
-	URI verifyUri = new URI(authUrl + "/verify");
-	CharacterInfo info = httpController.makeApiRequest(verifyUri, CharacterInfo.class, true);
-	model.setCharacterInfo(info);
-	fireControllerEvent(info, ControllerEvent.EventType.GOT_CHARACTER_INFO);
+        URI verifyUri = new URI(authUrl + "/verify");
+        CharacterInfo info = httpController.makeApiRequest(verifyUri, CharacterInfo.class, true);
+        model.setCharacterInfo(info);
+        fireControllerEvent(info, ControllerEvent.EventType.GOT_CHARACTER_INFO);
     }
 
     @Override
     public void update(Observable o, Object arg) {
-	try {
-	    if (o == webserver) {
-		DummyWebServerEvent event = (DummyWebServerEvent) arg;
-		switch (event.getType()) {
-		    case ERROR:
-			ControllerEvent<Exception> errorEvent = new ControllerEvent<>((Exception) event.getPayload(), ControllerEvent.EventType.ERROR);
-			setChanged();
-			notifyObservers(errorEvent);
-			break;
-		    case GOT_RESPONSE:
-			ControllerEvent successEvent = new ControllerEvent(null, ControllerEvent.EventType.GOT_TOKEN);
-			setChanged();
-			notifyObservers(successEvent);
-			AuthData authData = (AuthData) event.getPayload();
-			httpController.setAccessCode(authData.getAccessCode());
-			queryCharacterInformation();
-			queryCharacterSheet();
-			locationPoller.start();
-			break;
-		}
-	    }
-            else if(o == keyLogger){
+        try {
+            if (o == webserver) {
+                DummyWebServerEvent event = (DummyWebServerEvent) arg;
+                switch (event.getType()) {
+                    case ERROR:
+                        ControllerEvent<Exception> errorEvent = new ControllerEvent<>((Exception) event.getPayload(), ControllerEvent.EventType.ERROR);
+                        setChanged();
+                        notifyObservers(errorEvent);
+                        break;
+                    case GOT_RESPONSE:
+                        ControllerEvent successEvent = new ControllerEvent(null, ControllerEvent.EventType.GOT_TOKEN);
+                        setChanged();
+                        notifyObservers(successEvent);
+                        AuthData authData = (AuthData) event.getPayload();
+                        httpController.setAccessCode(authData.getAccessCode());
+                        queryCharacterInformation();
+                        queryCharacterSheet();
+                        locationPoller.start();
+                        break;
+                }
+            } else if (o == keyLogger) {
                 KeyLoggerEvent event = (KeyLoggerEvent) arg;
                 SolarSystem currentSystem = model.getCurrentSystem();
-                if(currentSystem != null){
+                if (currentSystem != null) {
                     List<Signature> parsedSignatures = parseSignatures(event.getInput(), currentSystem.getId());
-                    
-                    
+
                     databaseController.mergeSignatures(parsedSignatures, model.getCharacter(), currentSystem.getId());
                     ControllerEvent locationEvent = new ControllerEvent(currentSystem, ControllerEvent.EventType.NEW_SIGNATURES);
                     setChanged();
                     notifyObservers(locationEvent);
                 }
-            }
-	    else if(o == locationPoller){
-		LocationPollerEvent event = (LocationPollerEvent) arg;
+            } else if (o == locationPoller) {
+                LocationPollerEvent event = (LocationPollerEvent) arg;
                 SolarSystem newLocation = event.getNewLocation();
                 querySolarSystemInformation(newLocation);
-		databaseController.save(newLocation, model.getCharacter());
-                
-		model.addSolarSystemToTravelRoute(newLocation);
-		setChanged();
-		notifyObservers(new ControllerEvent<>(newLocation, ControllerEvent.EventType.SOLAR_SYSTEM_CHANGE));
-	    }
-	}
-	catch (SQLException | URISyntaxException | IOException ex) {
-	    LOGGER.fatal("error while handling events.", ex);
-	    ControllerEvent<Exception> event = new ControllerEvent<>(ex, ControllerEvent.EventType.ERROR);
-	    setChanged();
-	    notifyObservers(event);
-	}
+                databaseController.save(newLocation, model.getCharacter());
+
+                model.addSolarSystemToTravelRoute(newLocation);
+                setChanged();
+                notifyObservers(new ControllerEvent<>(newLocation, ControllerEvent.EventType.SOLAR_SYSTEM_CHANGE));
+            }
+        } catch (SQLException | URISyntaxException | IOException ex) {
+            LOGGER.fatal("error while handling events.", ex);
+            ControllerEvent<Exception> event = new ControllerEvent<>(ex, ControllerEvent.EventType.ERROR);
+            setChanged();
+            notifyObservers(event);
+        }
     }
 
     public void init() throws NativeHookException, ClassNotFoundException, SQLException, PropertyVetoException {
-	//turn off debug logging from JNativeHook. great lib btw!
-	java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GlobalScreen.class.getPackage().getName());
-	logger.setLevel(Level.WARNING);
-	GlobalScreen.registerNativeHook();
+        //turn off debug logging from JNativeHook. great lib btw!
+        java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GlobalScreen.class.getPackage().getName());
+        logger.setLevel(Level.WARNING);
+        GlobalScreen.registerNativeHook();
 
-	keyLogger = new KeyLogger();
+        keyLogger = new KeyLogger();
         keyLogger.addObserver(this);
 
-	GlobalScreen.addNativeKeyListener(keyLogger);
-	LOGGER.info("initialized key logger");
+        GlobalScreen.addNativeKeyListener(keyLogger);
+        LOGGER.info("initialized key logger");
 
-	databaseController = new DatabaseController();
-	databaseController.initDatabase();
+        databaseController = new DatabaseController();
+        databaseController.initDatabase();
 
-	LOGGER.info("created database controller.");
+        LOGGER.info("created database controller.");
     }
 
     public void shutDown() {
-	try {
-	    GlobalScreen.unregisterNativeHook();
-	}
-	catch (Exception ex) {
-	    LOGGER.warn("error while shutting down key logger.", ex);
-	}
-	webserver.stopListening();
-	locationPoller.stop();
-	httpController.shutDown();
+        try {
+            GlobalScreen.unregisterNativeHook();
+        } catch (Exception ex) {
+            LOGGER.warn("error while shutting down key logger.", ex);
+        }
+        webserver.stopListening();
+        locationPoller.stop();
+        httpController.shutDown();
     }
 }

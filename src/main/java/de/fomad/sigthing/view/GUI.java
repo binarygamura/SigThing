@@ -42,7 +42,6 @@ import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -71,6 +70,8 @@ public class GUI extends JFrame implements Observer {
     private AboutDialog aboutDialog;
     
     private OptionDialog configurationDialog;
+    
+    private CommentDialog commentDialog;
     
     private SignatureTable table;
     
@@ -128,6 +129,12 @@ public class GUI extends JFrame implements Observer {
 	infoPanel = new InfoPanel();
 
         table = new SignatureTable();
+        table.getSelectionModel().addListSelectionListener(e -> {if(!e.getValueIsAdjusting()){
+            Signature selected = table.getSignatureAtRow(e.getFirstIndex());
+            if(selected != null){
+                infoPanel.setCurrentSignature(selected);
+            }
+        }});
         
 	JScrollPane centerPanel = new JScrollPane(table);
 	centerPanel.setBorder(BorderFactory.createTitledBorder("current system"));
@@ -136,9 +143,38 @@ public class GUI extends JFrame implements Observer {
 //	helpButton.setMnemonic('h');
 
 	JButton deleteButton = new JButton("delete", iconCache.getImageIcon(IconCache.IconId.CANCEL_ICON));
+        deleteButton.addActionListener(e -> {
+            try {
+                int selectedRow = table.getSelectedRow();
+                if(selectedRow >= 0){
+                    Signature selected = table.getSignatureAtRow(selectedRow);
+                    if(selected != null){
+                        int result = JOptionPane.showConfirmDialog(GUI.this, "do you really want to delete \""+selected.getSignature()+"\"?", "confirm", JOptionPane.YES_NO_OPTION);
+                        if(result == JOptionPane.YES_OPTION){
+                            controller.getDatabaseController().deleteSignature(selected);
+                            table.setData(controller.getSignaturesForCurrentSystem());
+                        }
+                    }
+                }
+            }
+            catch(SQLException ex){
+                LOGGER.warn("error while deleting single signature.", ex);
+                JOptionPane.showMessageDialog(GUI.this, ex.getMessage(), "error while deleting", JOptionPane.WARNING_MESSAGE);
+            }
+        });
 	deleteButton.setMnemonic('d');
 
 	JButton commentButton = new JButton("comment", iconCache.getImageIcon(IconCache.IconId.COMMENT));
+        commentButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+                if(selectedRow >= 0){
+                    Signature selected = table.getSignatureAtRow(selectedRow);
+                    if(selected != null){
+                        commentDialog.openCentered(selected);
+                    }
+                }
+            
+        });
 	commentButton.setMnemonic('c');
 
 	JButton optionsButton = new JButton("options", iconCache.getImageIcon(IconCache.IconId.CONFIGURATION));
@@ -166,6 +202,12 @@ public class GUI extends JFrame implements Observer {
 
 	return mainGui;
     }
+
+    Controller getController() {
+        return controller;
+    }
+    
+    
 
     private void initAndDisplay(Properties properties) throws IOException, URISyntaxException, NativeHookException, SQLException, ClassNotFoundException, PropertyVetoException {
 
@@ -226,6 +268,7 @@ public class GUI extends JFrame implements Observer {
 
 	aboutDialog = new AboutDialog(this);
         configurationDialog = new OptionDialog(this);
+        commentDialog = new CommentDialog(this);
 	
 	getContentPane().add(openAuthButton, "openAuthButton");
 	getContentPane().add(createMainGui(), "mainGui");

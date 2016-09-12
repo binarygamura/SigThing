@@ -57,6 +57,10 @@ public class SolarSystem extends Reference {
 	return hash;
     }
 
+    
+    
+    
+
     @Override
     public boolean equals(Object obj) {
 	if (obj == null) {

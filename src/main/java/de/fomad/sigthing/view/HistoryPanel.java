@@ -44,6 +44,7 @@ public class HistoryPanel extends JPanel {
 	add(scrollPane, BorderLayout.CENTER);
     }
     
+    
     public void repaintList(){
 	
 	int selectedIndex = history.getSelectedIndex();
@@ -67,7 +68,7 @@ public class HistoryPanel extends JPanel {
             StringBuilder builder = new StringBuilder("<html><b>");
             builder.append(historyNode.solarSystem.getName());
             builder.append("</b>").append("<br><i>");
-            builder.append(dateFormat.format(historyNode.added)).append("</i>");
+            builder.append(dateFormat.format(historyNode.solarSystem.getCreated())).append("</i>");
 	    label.setText(builder.toString());
 	    return label;
 	}
