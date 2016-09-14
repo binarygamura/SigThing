@@ -3,6 +3,7 @@ package de.fomad.sigthing.model;
 /**
  *
  * @author binary gamura
+ * @param <T>
  */
 public class ControllerEvent<T> {
 

@@ -15,7 +15,7 @@ public final class AboutDialog extends JDialog {
     
     private final GUI parent;
     
-    private static final String markup = "<html>\n" +
+    private static final String MARKUP = "<html>\n" +
 	"<h1>SigThing</h1><p>SigThing is a small tool for players of the awesome mmorpg EVE-Online which allows them to track their path<br>"
       + "through the universe and discoveries they make during their journey. It is the successor of a small tool by the name of \"SigTrack\"<br>"
       + "I created before. It took use of the ingame browser (IGB) but lacked in terms of integration. Since CCP, the creator<br>"
@@ -55,7 +55,7 @@ public final class AboutDialog extends JDialog {
 	closeButton.addActionListener(e -> {setVisible(false);});
         closeButton.setMnemonic('c');
 	
-	JLabel textLabel = new JLabel(markup);
+	JLabel textLabel = new JLabel(MARKUP);
         textLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 	
 	add(textLabel, BorderLayout.CENTER);

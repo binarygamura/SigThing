@@ -60,7 +60,7 @@ public class LocationPoller extends Observable implements Runnable {
 	    Location location;
 	    URI locationUri = new URI(apiUrl + "/characters/" + model.getCharacter().getId() + "/location/");
 	    while (!Thread.currentThread().isInterrupted()) {
-		location = httpController.makeApiRequest(locationUri, Location.class, true);
+		location = httpController.makeApiGetRequest(locationUri, Location.class, true);
 		LOGGER.info("got location from solar system \"" + location.getSolarSystem().getName() + "\".");
 		    //{"message": "Authentication needed, bad token", "key": "authNeeded", "exceptionType": "UnauthorizedError"}
 

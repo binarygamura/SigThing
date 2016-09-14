@@ -30,6 +30,7 @@ public class SignatureTable extends JTable {
         getTableHeader().setReorderingAllowed(false);
         setModel(tableModel);
         setSelectionMode(DefaultListSelectionModel.SINGLE_SELECTION);
+        setAutoCreateRowSorter(true);
         
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
         rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
@@ -126,6 +127,8 @@ public class SignatureTable extends JTable {
                     case 3:
                         result = decimalFormat.format(signature.getSignalStrength())+"%";
                         break;
+                    default:
+                        result = "";
                 }
             }
             return result;

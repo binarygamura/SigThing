@@ -19,6 +19,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -122,8 +123,35 @@ public class HttpController {
 	    LOGGER.warn("error while shutting down http client.", ex);
 	}
     }
+    
+    public <T> T makeApiPostRequest(URI target, Class<T> responseType, boolean useAuth, Object payload) throws IOException, UnsupportedEncodingException {
 
-    public <T> T makeApiRequest(URI target, Class<T> responseType, boolean useAuth) throws IOException, UnsupportedEncodingException {
+	if (!authData.hasAccessToken()) {
+	    retrieveAccessToken(false);
+	}
+	if (authData.isAccessTokenExpired()) {
+	    retrieveAccessToken(true);
+	}
+
+	RequestBuilder builder = RequestBuilder
+		.post()
+                .setEntity(new StringEntity(gson.toJson(payload)))
+		.setUri(target);
+        if(useAuth){
+            builder.addHeader(new BasicHeader("Authorization", "Bearer " + authData.getAccessToken()));
+        }
+        HttpUriRequest request = builder.build();
+	try (CloseableHttpResponse response = httpClient.execute(request)) {
+	    if (response.getStatusLine().getStatusCode() != 200) {
+		String responseMessage = EntityUtils.toString(response.getEntity());
+		throw new IOException("unable to perform post query! " + responseMessage);
+	    }
+
+	    return gson.fromJson(EntityUtils.toString(response.getEntity()), responseType);
+	}
+    }
+    
+    public <T> T makeApiGetRequest(URI target, Class<T> responseType, boolean useAuth) throws IOException, UnsupportedEncodingException {
 
 	if (!authData.hasAccessToken()) {
 	    retrieveAccessToken(false);
@@ -142,7 +170,7 @@ public class HttpController {
 	try (CloseableHttpResponse response = httpClient.execute(request)) {
 	    if (response.getStatusLine().getStatusCode() != 200) {
 		String responseMessage = EntityUtils.toString(response.getEntity());
-		throw new IOException("unable to perform query! " + responseMessage);
+		throw new IOException("unable to perform get query! " + responseMessage);
 	    }
 
 	    return gson.fromJson(EntityUtils.toString(response.getEntity()), responseType);

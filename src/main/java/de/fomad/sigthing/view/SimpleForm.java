@@ -13,7 +13,7 @@ import javax.swing.JPanel;
  */
 public class SimpleForm extends JPanel {
 
-    private GridBagConstraints c;
+    private final GridBagConstraints c;
 
     public SimpleForm() {
 	super(new GridBagLayout());
@@ -25,6 +25,14 @@ public class SimpleForm extends JPanel {
 	c.gridwidth = 1;
     }
 
+    public void addLine(JComponent component){
+        c.gridy++;
+        c.gridx = 0;
+        c.gridwidth = 2;
+        add(component, c);
+        c.gridwidth = 1;
+    }
+    
     public void addRow(String title, JComponent component) {
 	c.gridy++;
 	c.gridx = 0;

@@ -23,7 +23,7 @@ public class CommentDialog extends JDialog{
     
     private JEditorPane editorPane;
     
-    private Signature signature;
+    private transient Signature signature;
     
     public CommentDialog(GUI parent){
         super(parent, "edit comment");

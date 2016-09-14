@@ -15,17 +15,15 @@ public class SolarSystem extends Reference {
     
     private SolarSystemInformation information;
 
-    private final Date created;
+    private final Date added;
     
     public SolarSystem(){
-        created = new Date();
+        added = new Date();
     }
 
-    public Date getCreated() {
-        return new Date(created.getTime());
+    public Date getAdded() {
+        return new Date(added.getTime());
     }
-    
-    
     
     public SolarSystemInformation getInformation() {
         return information;

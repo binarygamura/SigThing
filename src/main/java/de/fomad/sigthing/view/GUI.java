@@ -42,10 +42,14 @@ import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.Locale;
+import java.util.TimeZone;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 /**
@@ -65,7 +69,7 @@ public class GUI extends JFrame implements Observer {
 
     private static final String TITLE = "Sig Thing";
 
-    private final IconCache iconCache;
+    private transient final IconCache iconCache;
 
     private AboutDialog aboutDialog;
     
@@ -126,15 +130,18 @@ public class GUI extends JFrame implements Observer {
     private JPanel createMainGui() {
 	JPanel mainGui = new JPanel(new BorderLayout());
 	
-	infoPanel = new InfoPanel();
+	infoPanel = new InfoPanel(this);
 
         table = new SignatureTable();
-        table.getSelectionModel().addListSelectionListener(e -> {if(!e.getValueIsAdjusting()){
-            Signature selected = table.getSignatureAtRow(e.getFirstIndex());
-            if(selected != null){
-                infoPanel.setCurrentSignature(selected);
+        table.getSelectionModel().addListSelectionListener((e) -> {
+            int row = table.getSelectedRow();
+            if(row >= 0){
+                Signature selectedSignature = table.getSignatureAtRow(row);
+                if(selectedSignature != null){
+                    infoPanel.setCurrentSignature(selectedSignature);
+                }
             }
-        }});
+        });
         
 	JScrollPane centerPanel = new JScrollPane(table);
 	centerPanel.setBorder(BorderFactory.createTitledBorder("current system"));
@@ -206,8 +213,6 @@ public class GUI extends JFrame implements Observer {
     Controller getController() {
         return controller;
     }
-    
-    
 
     private void initAndDisplay(Properties properties) throws IOException, URISyntaxException, NativeHookException, SQLException, ClassNotFoundException, PropertyVetoException {
 
@@ -220,8 +225,8 @@ public class GUI extends JFrame implements Observer {
         catch(IOException ex){
             LOGGER.warn("unable to read configuration. using defaults.", ex);
         }
-	JButton openAuthButton = new JButton("login with eve");
-	openAuthButton.addActionListener((e) -> {
+	JButton authButton = new JButton(iconCache.getImageIcon(IconCache.IconId.LOGIN_ICON));
+	authButton.addActionListener((e) -> {
 	    try {
 		String loginURL = properties.getProperty("auth_url") + "/authorize";
 		String clientId = properties.getProperty("client_id");
@@ -231,7 +236,7 @@ public class GUI extends JFrame implements Observer {
 		builder.addParameter("response_type", "code");
 		builder.addParameter("redirect_uri", callbackUrl);
 		builder.addParameter("client_id", clientId);
-		builder.addParameter("scope", "characterLocationRead");
+		builder.addParameter("scope", "characterLocationRead characterNavigationWrite");
 
 		URI target = builder.build();
 		if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
@@ -265,12 +270,29 @@ public class GUI extends JFrame implements Observer {
 	controller.init();
 	
 	historyPanel = new HistoryPanel(controller.getModel());
+        historyPanel.getList().addListSelectionListener(e -> {
+            try {
+                if(!e.getValueIsAdjusting()){
+                    JList<HistoryPanel.HistoryNode> list = (JList<HistoryPanel.HistoryNode>) e.getSource();
+                    HistoryPanel.HistoryNode selectedValue = list.getSelectedValue();
+                    if(selectedValue != null){
+                        SolarSystem solarSystem = selectedValue.getSolarSystem();
+                        infoPanel.setCurrentSolarSystem(solarSystem);
+                        table.setData(controller.getDatabaseController().querySignaturesFor(solarSystem.getId()));
+                    }
+                }
+            }
+            catch(SQLException ex){
+                LOGGER.warn("error while getting data.", ex);
+                JOptionPane.showMessageDialog(GUI.this, ex.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
 	aboutDialog = new AboutDialog(this);
         configurationDialog = new OptionDialog(this);
         commentDialog = new CommentDialog(this);
 	
-	getContentPane().add(openAuthButton, "openAuthButton");
+	getContentPane().add(authButton, "openAuthButton");
 	getContentPane().add(createMainGui(), "mainGui");
 
 	cardLayout.show(getContentPane(), "openAuthButton");
@@ -296,6 +318,8 @@ public class GUI extends JFrame implements Observer {
     }
 
     public static void main(String[] args) {
+        Locale.setDefault(Locale.ENGLISH);
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
 	System.setProperty("awt.useSystemAAFontSettings", "on");
 	System.setProperty("swing.aatext", "true");
 	try {
@@ -342,7 +366,9 @@ public class GUI extends JFrame implements Observer {
 		switch (event.getType()) {
 		    case ERROR:
 			Exception e = (Exception) event.getPayload();
-			showError(e.getMessage(), "error");
+                        if(isVisible()){
+                            showError(e.getMessage(), "error");
+                        }
 			break;
 		    case GOT_TOKEN:
 			cardLayout.show(getContentPane(), "mainGui");

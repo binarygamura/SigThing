@@ -51,7 +51,9 @@ public class IconCache {
         
         COMMENT("pencil_16.png"),
         
-	APP_ICON("gingerbread_man_chocolate_16.png");
+	APP_ICON("gingerbread_man_chocolate_16.png"),
+        
+        LOGIN_ICON("EVE_SSO_Login_Buttons_Large_White.png");
 	
 	private final String file;
 	

@@ -45,8 +45,8 @@ public class DatabaseController {
 
     private void createStructure() throws SQLException {
 	String[] initQueries = new String[]{
-	    "CREATE TABLE IF NOT EXISTS solar_systems (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, name VARCHAR(255) UNIQUE, added_by VARCHAR(255), comment TEXT)",
-	    "CREATE TABLE IF NOT EXISTS signatures (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, signature VARCHAR(255), scan_group VARCHAR(255), signal_strength FLOAT, solar_system_id INT, name VARCHAR(255), added_by VARCHAR(255), comment TEXT )",
+	    "CREATE TABLE IF NOT EXISTS solar_systems (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, name VARCHAR(255) UNIQUE, added_by VARCHAR(255), comment TEXT, added TIMESTAMP DEFAULT NOW())",
+	    "CREATE TABLE IF NOT EXISTS signatures (id INT PRIMARY KEY AUTO_INCREMENT(1,1) NOT NULL, signature VARCHAR(255), scan_group VARCHAR(255), signal_strength FLOAT, solar_system_id INT, name VARCHAR(255), added_by VARCHAR(255), comment TEXT, added TIMESTAMP DEFAULT NOW())",
 	    "CREATE TABLE IF NOT EXISTS pilots (id INT PRIMARY KEY NOT NULL, character_name VARCHAR(255) UNIQUE) "};
 	try (Connection connection = databasePool.getConnection(); Statement statement = connection.createStatement()) {
 	    for (String query : initQueries) {
@@ -66,6 +66,7 @@ public class DatabaseController {
         signature.setAddedBy(result.getString("added_by"));
         signature.setScanGroup(result.getString("scan_group"));
         signature.setComment(result.getString("comment"));
+        signature.setAdded(result.getTimestamp("added"));
         return signature;
     }
     
@@ -85,7 +86,7 @@ public class DatabaseController {
     }
     
     public List<Signature> querySignaturesFor(Connection connection, int solarSystemId) throws SQLException{
-        String query = "SELECT comment, id, name, signature, scan_group, signal_strength, solar_system_id, added_by FROM signatures WHERE solar_system_id = ?";
+        String query = "SELECT comment, id, name, signature, scan_group, signal_strength, solar_system_id, added_by, added FROM signatures WHERE solar_system_id = ?";
         List<Signature> signatures = new ArrayList<>();
         try(PreparedStatement selectStatement = connection.prepareStatement(query)){
             selectStatement.setInt(1, solarSystemId);

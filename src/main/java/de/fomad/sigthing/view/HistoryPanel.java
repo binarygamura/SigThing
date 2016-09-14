@@ -1,5 +1,6 @@
 package de.fomad.sigthing.view;
 
+import de.fomad.sigthing.model.Constants;
 import de.fomad.sigthing.model.Model;
 import de.fomad.sigthing.model.SolarSystem;
 import java.awt.BorderLayout;
@@ -7,7 +8,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -45,6 +45,10 @@ public class HistoryPanel extends JPanel {
     }
     
     
+    public JList<HistoryNode> getList(){
+        return history;
+    }
+    
     public void repaintList(){
 	
 	int selectedIndex = history.getSelectedIndex();
@@ -59,7 +63,7 @@ public class HistoryPanel extends JPanel {
 
     public static class SolarSystemRenderer extends DefaultListCellRenderer {
 
-        private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        private final DateFormat dateFormat = new SimpleDateFormat(Constants.Formats.DATE);
         
 	@Override
 	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -68,20 +72,22 @@ public class HistoryPanel extends JPanel {
             StringBuilder builder = new StringBuilder("<html><b>");
             builder.append(historyNode.solarSystem.getName());
             builder.append("</b>").append("<br><i>");
-            builder.append(dateFormat.format(historyNode.solarSystem.getCreated())).append("</i>");
+            builder.append(dateFormat.format(historyNode.solarSystem.getAdded())).append("</i>");
 	    label.setText(builder.toString());
 	    return label;
 	}
     }
     
-    private static class HistoryNode {
-        private final Date added;
+    public static class HistoryNode {
         
         private final SolarSystem solarSystem;
         
         private HistoryNode(SolarSystem solarSystem){            
             this.solarSystem = solarSystem;
-            added = new Date();
+        }
+
+        public SolarSystem getSolarSystem() {
+            return solarSystem;
         }
     }
 }

@@ -1,5 +1,6 @@
 package de.fomad.sigthing.model;
 
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -23,6 +24,16 @@ public class Signature {
     private String addedBy;
     
     private String comment;
+    
+    private Date added;
+
+    public Date getAdded() {
+        return new Date(added.getTime());
+    }
+
+    public void setAdded(Date added) {
+        this.added = new Date(added.getTime());
+    }
 
     public String getComment() {
         return comment;

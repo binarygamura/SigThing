@@ -1,46 +1,9 @@
 package de.fomad.sigthing.model;
 
 import com.google.gson.annotations.SerializedName;
-import java.net.URI;
+import java.util.Objects;
 
 /**
- * {
- * "race": { "href": "https://crest-tq.eveonline.com/races/4/", "id": 4,
- * "id_str": "4" }, "fittings": { "href":
- * "https://crest-tq.eveonline.com/characters/2047918291/fittings/" },
- * "description": "Demo description. HI MOM!", "bloodLine": { "href":
- * "https://crest-tq.eveonline.com/bloodlines/13/", "id": 13, "id_str": "13" },
- * "gender_str": "1", "corporation": { "name": "Resilience.", "isNPC": false,
- * "href": "https://crest-tq.eveonline.com/corporations/98019139/", "id_str":
- * "98019139", "logo": { "32x32": { "href":
- * "http://imageserver.eveonline.com/Corporation/98019139_32.png" }, "64x64": {
- * "href": "http://imageserver.eveonline.com/Corporation/98019139_64.png" },
- * "128x128": { "href":
- * "http://imageserver.eveonline.com/Corporation/98019139_128.png" }, "256x256":
- * { "href": "http://imageserver.eveonline.com/Corporation/98019139_256.png" }
- * }, "id": 98019139 }, "contacts": { "href":
- * "https://crest-tq.eveonline.com/characters/2047918291/contacts/" },
- * "opportunities": { "href":
- * "https://crest-tq.eveonline.com/characters/2047918291/opportunities/" },
- * "id_str": "2047918291", "href":
- * "https://crest-tq.eveonline.com/characters/2047918291/", "ui": {
- * "setWaypoints": { "href":
- * "https://crest-tq.eveonline.com/characters/2047918291/ui/autopilot/waypoints/"
- * }, "showContract": { "href":
- * "https://crest-tq.eveonline.com/characters/2047918291/ui/openwindow/contract/"
- * }, "showMarketDetails": { "href":
- * "https://crest-tq.eveonline.com/characters/2047918291/ui/openwindow/marketdetails/"
- * } }, "location": { "href":
- * "https://crest-tq.eveonline.com/characters/2047918291/location/" }, "gender":
- * 1, "portrait": { "32x32": { "href":
- * "http://imageserver.eveonline.com/Character/2047918291_32.jpg" }, "64x64": {
- * "href": "http://imageserver.eveonline.com/Character/2047918291_64.jpg" },
- * "128x128": { "href":
- * "http://imageserver.eveonline.com/Character/2047918291_128.jpg" }, "256x256":
- * { "href": "http://imageserver.eveonline.com/Character/2047918291_256.jpg" }
- * }, "id": 2047918291, "loyaltyPoints": { "href":
- * "https://crest-tq.eveonline.com/characters/2047918291/loyaltypoints/" },
- * "name": "Blacksmoke16" }
  *
  * @author binary
  */
@@ -71,201 +34,346 @@ public class Character extends Reference {
     private Corporation corporation;
 
     public Race getRace() {
-	return race;
+        return race;
     }
 
     public void setRace(Race race) {
-	this.race = race;
+        this.race = race;
     }
 
     public Reference getFittings() {
-	return fittings;
+        return fittings;
     }
 
     public void setFittings(Reference fittings) {
-	this.fittings = fittings;
+        this.fittings = fittings;
     }
 
     public String getDescription() {
-	return description;
+        return description;
     }
 
     public void setDescription(String description) {
-	this.description = description;
+        this.description = description;
     }
 
     public Corporation getCorporation() {
-	return corporation;
+        return corporation;
     }
 
     public void setCorporation(Corporation corporation) {
-	this.corporation = corporation;
+        this.corporation = corporation;
     }
 
     public Portraits getPortrait() {
-	return portrait;
+        return portrait;
     }
 
     public void setPortrait(Portraits portrait) {
-	this.portrait = portrait;
+        this.portrait = portrait;
     }
 
     public String getName() {
-	return name;
+        return name;
     }
 
     public void setName(String name) {
-	this.name = name;
+        this.name = name;
     }
 
     public int getId() {
-	return id;
+        return id;
     }
 
     public void setId(int id) {
-	this.id = id;
+        this.id = id;
     }
 
     public int getGender() {
-	return gender;
+        return gender;
     }
 
     public void setGender(int gender) {
-	this.gender = gender;
+        this.gender = gender;
     }
 
     public Reference getLoyaltyPoints() {
-	return loyaltyPoints;
+        return loyaltyPoints;
     }
 
     public void setLoyaltyPoints(Reference loyaltyPoints) {
-	this.loyaltyPoints = loyaltyPoints;
+        this.loyaltyPoints = loyaltyPoints;
     }
 
     public Reference getLocation() {
-	return location;
+        return location;
     }
 
     public void setLocation(Reference location) {
-	this.location = location;
+        this.location = location;
     }
 
     public Reference getContacts() {
-	return contacts;
+        return contacts;
     }
 
     public void setContacts(Reference contacts) {
-	this.contacts = contacts;
+        this.contacts = contacts;
     }
 
     public Reference getOpportunities() {
-	return opportunities;
+        return opportunities;
     }
 
     public void setOpportunities(Reference opportunities) {
-	this.opportunities = opportunities;
+        this.opportunities = opportunities;
     }
 
     public static class Race extends Reference {
 
-	private int id;
+        private int id;
 
-	public int getId() {
-	    return id;
-	}
+        public int getId() {
+            return id;
+        }
 
-	public void setId(int id) {
-	    this.id = id;
-	}
+        public void setId(int id) {
+            this.id = id;
+        }
     }
 
     public static class Corporation extends Reference {
 
-	private String name;
+        private String name;
 
-	private boolean isNpc;
+        private boolean isNpc;
 
-	private Portraits logo;
+        private Portraits logo;
 
-	private int id;
+        private int id;
 
-	public String getName() {
-	    return name;
-	}
+        public String getName() {
+            return name;
+        }
 
-	public void setName(String name) {
-	    this.name = name;
-	}
+        public void setName(String name) {
+            this.name = name;
+        }
 
-	public boolean isIsNpc() {
-	    return isNpc;
-	}
+        public boolean isIsNpc() {
+            return isNpc;
+        }
 
-	public void setIsNpc(boolean isNpc) {
-	    this.isNpc = isNpc;
-	}
+        public void setIsNpc(boolean isNpc) {
+            this.isNpc = isNpc;
+        }
 
-	public Portraits getLogo() {
-	    return logo;
-	}
+        public Portraits getLogo() {
+            return logo;
+        }
 
-	public void setLogo(Portraits logo) {
-	    this.logo = logo;
-	}
+        public void setLogo(Portraits logo) {
+            this.logo = logo;
+        }
 
-	public int getId() {
-	    return id;
-	}
+        public int getId() {
+            return id;
+        }
 
-	public void setId(int id) {
-	    this.id = id;
-	}
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 29 * hash + Objects.hashCode(this.name);
+            hash = 29 * hash + (this.isNpc ? 1 : 0);
+            hash = 29 * hash + Objects.hashCode(this.logo);
+            hash = 29 * hash + this.id;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Corporation other = (Corporation) obj;
+            if (this.isNpc != other.isNpc) {
+                return false;
+            }
+            if (this.id != other.id) {
+                return false;
+            }
+            if (!Objects.equals(this.name, other.name)) {
+                return false;
+            }
+            if (!Objects.equals(this.logo, other.logo)) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 59 * hash + Objects.hashCode(this.name);
+        hash = 59 * hash + this.id;
+        hash = 59 * hash + this.gender;
+        hash = 59 * hash + Objects.hashCode(this.race);
+        hash = 59 * hash + Objects.hashCode(this.loyaltyPoints);
+        hash = 59 * hash + Objects.hashCode(this.location);
+        hash = 59 * hash + Objects.hashCode(this.fittings);
+        hash = 59 * hash + Objects.hashCode(this.contacts);
+        hash = 59 * hash + Objects.hashCode(this.opportunities);
+        hash = 59 * hash + Objects.hashCode(this.portrait);
+        hash = 59 * hash + Objects.hashCode(this.description);
+        hash = 59 * hash + Objects.hashCode(this.corporation);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Character other = (Character) obj;
+        if (this.id != other.id) {
+            return false;
+        }
+        if (this.gender != other.gender) {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.description, other.description)) {
+            return false;
+        }
+        if (!Objects.equals(this.race, other.race)) {
+            return false;
+        }
+        if (!Objects.equals(this.loyaltyPoints, other.loyaltyPoints)) {
+            return false;
+        }
+        if (!Objects.equals(this.location, other.location)) {
+            return false;
+        }
+        if (!Objects.equals(this.fittings, other.fittings)) {
+            return false;
+        }
+        if (!Objects.equals(this.contacts, other.contacts)) {
+            return false;
+        }
+        if (!Objects.equals(this.opportunities, other.opportunities)) {
+            return false;
+        }
+        if (!Objects.equals(this.portrait, other.portrait)) {
+            return false;
+        }
+        if (!Objects.equals(this.corporation, other.corporation)) {
+            return false;
+        }
+        return true;
     }
 
     public static class Portraits {
 
-	@SerializedName("32x32")
-	private Reference small;
+        @SerializedName("32x32")
+        private Reference small;
 
-	@SerializedName("64x64")
-	private Reference medium;
+        @SerializedName("64x64")
+        private Reference medium;
 
-	@SerializedName("128x128")
-	private Reference large;
+        @SerializedName("128x128")
+        private Reference large;
 
-	@SerializedName("256x256")
-	private Reference huge;
+        @SerializedName("256x256")
+        private Reference huge;
 
-	public Reference getSmall() {
-	    return small;
-	}
+        public Reference getSmall() {
+            return small;
+        }
 
-	public void setSmall(Reference small) {
-	    this.small = small;
-	}
+        public void setSmall(Reference small) {
+            this.small = small;
+        }
 
-	public Reference getMedium() {
-	    return medium;
-	}
+        public Reference getMedium() {
+            return medium;
+        }
 
-	public void setMedium(Reference medium) {
-	    this.medium = medium;
-	}
+        public void setMedium(Reference medium) {
+            this.medium = medium;
+        }
 
-	public Reference getLarge() {
-	    return large;
-	}
+        public Reference getLarge() {
+            return large;
+        }
 
-	public void setLarge(Reference large) {
-	    this.large = large;
-	}
+        public void setLarge(Reference large) {
+            this.large = large;
+        }
 
-	public Reference getHuge() {
-	    return huge;
-	}
+        public Reference getHuge() {
+            return huge;
+        }
 
-	public void setHuge(Reference huge) {
-	    this.huge = huge;
-	}
+        public void setHuge(Reference huge) {
+            this.huge = huge;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + Objects.hashCode(this.small);
+            hash = 79 * hash + Objects.hashCode(this.medium);
+            hash = 79 * hash + Objects.hashCode(this.large);
+            hash = 79 * hash + Objects.hashCode(this.huge);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Portraits other = (Portraits) obj;
+            if (!Objects.equals(this.small, other.small)) {
+                return false;
+            }
+            if (!Objects.equals(this.medium, other.medium)) {
+                return false;
+            }
+            if (!Objects.equals(this.large, other.large)) {
+                return false;
+            }
+            if (!Objects.equals(this.huge, other.huge)) {
+                return false;
+            }
+            return true;
+        }
+        
+        
     }
 }

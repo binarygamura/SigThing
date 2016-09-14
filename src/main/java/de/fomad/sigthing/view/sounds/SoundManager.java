@@ -31,7 +31,7 @@ public class SoundManager {
         
         try {
             if(configuration.isPlaySounds()){
-                AudioInputStream audioStream = AudioSystem.getAudioInputStream(getClass().getResourceAsStream(id.file));
+                AudioInputStream audioStream = AudioSystem.getAudioInputStream(SoundManager.class.getResourceAsStream(id.file));
                 AudioFormat format = audioStream.getFormat();
                 DataLine.Info info = new DataLine.Info(Clip.class, format);
                 

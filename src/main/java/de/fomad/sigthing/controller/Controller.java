@@ -22,6 +22,7 @@ import de.fomad.sigthing.model.LocationPollerEvent;
 import de.fomad.sigthing.model.Signature;
 import de.fomad.sigthing.model.SolarSystem;
 import de.fomad.sigthing.model.SolarSystemInformation;
+import de.fomad.sigthing.model.WaypointRequest;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,22 +89,26 @@ public class Controller extends Observable implements Observer {
         Signature signature;
         String strengthString;
         String[] columns;
-        List<Signature> signatures = new ArrayList<>();
+        List<Signature> signatures = null;
         System.out.println(data);
         String[] lines = data.split("\\n");
-        for (int i = 0; i < lines.length; i++) {
-            columns = lines[i].split("\\t");
-            if (columns.length == 6 && columns[1].equalsIgnoreCase("Cosmic Signature")) {
+        if(lines.length > 0){
+            for (String line : lines) {
+                columns = line.split("\\t");
+                if (columns.length == 6 && columns[1].equalsIgnoreCase("Cosmic Signature")) {
+                    if(signatures == null){
+                        signatures = new ArrayList<>(lines.length);
+                    }
+                    strengthString = columns[4].substring(0, columns[4].length() - 1).replace(',', '.');
 
-                strengthString = columns[4].substring(0, columns[4].length() - 1).replace(',', '.');
-
-                signature = new Signature();
-                signature.setSignature(columns[0].trim());
-                signature.setScanGroup(columns[2].trim());
-                signature.setName(columns[3].trim());
-                signature.setSignalStrength(Float.valueOf(strengthString));
-                signature.setSolarSystemId(solarSystemId);
-                signatures.add(signature);
+                    signature = new Signature();
+                    signature.setSignature(columns[0].trim());
+                    signature.setScanGroup(columns[2].trim());
+                    signature.setName(columns[3].trim());
+                    signature.setSignalStrength(Float.valueOf(strengthString));
+                    signature.setSolarSystemId(solarSystemId);
+                    signatures.add(signature);
+                }
             }
         }
         return signatures;
@@ -111,13 +116,13 @@ public class Controller extends Observable implements Observer {
 
     private void querySolarSystemInformation(SolarSystem solarSystem) throws URISyntaxException, IOException {
         URI dataUri = new URI(apiUrl + "/solarsystems/" + solarSystem.getId() + "/");
-        SolarSystemInformation solarSystemInfo = httpController.makeApiRequest(dataUri, SolarSystemInformation.class, false);
+        SolarSystemInformation solarSystemInfo = httpController.makeApiGetRequest(dataUri, SolarSystemInformation.class, false);
         solarSystem.setInformation(solarSystemInfo);
     }
 
     private void queryCharacterSheet() throws URISyntaxException, IOException {
         URI dataUri = new URI(apiUrl + "/characters/" + model.getCharacterInfo().getId() + "/");
-        Character characterData = httpController.makeApiRequest(dataUri, Character.class, true);
+        Character characterData = httpController.makeApiGetRequest(dataUri, Character.class, true);
         model.setCharacter(characterData);
         fireControllerEvent(characterData, ControllerEvent.EventType.GOT_CHARACTER);
     }
@@ -129,11 +134,24 @@ public class Controller extends Observable implements Observer {
 
     private void queryCharacterInformation() throws URISyntaxException, IOException {
         URI verifyUri = new URI(authUrl + "/verify");
-        CharacterInfo info = httpController.makeApiRequest(verifyUri, CharacterInfo.class, true);
+        CharacterInfo info = httpController.makeApiGetRequest(verifyUri, CharacterInfo.class, true);
         model.setCharacterInfo(info);
         fireControllerEvent(info, ControllerEvent.EventType.GOT_CHARACTER_INFO);
     }
 
+    public void addWaypointTo(SolarSystem solarSystem) throws URISyntaxException, IOException{
+        URI waypointUri = new URI(apiUrl+"/characters/"+model.getCharacterInfo().getId()+"/ui/autopilot/waypoints/");
+        URI destinationUri = new URI(apiUrl+"/solarsystems/"+solarSystem.getInformation().getId()+"/");
+        WaypointRequest request = new WaypointRequest();
+        WaypointRequest.SolarSystem internalSystem = new WaypointRequest.SolarSystem();
+        internalSystem.setId(solarSystem.getId());
+        internalSystem.setHref(destinationUri);
+        request.setClearOtherWaypoints(true);
+        request.setFirst(false);
+        request.setSolarSystem(internalSystem);
+        httpController.makeApiPostRequest(waypointUri, Object.class, true, request);
+    }
+    
     @Override
     public void update(Observable o, Object arg) {
         try {
@@ -154,6 +172,7 @@ public class Controller extends Observable implements Observer {
                         queryCharacterInformation();
                         queryCharacterSheet();
                         locationPoller.start();
+
                         break;
                 }
             } else if (o == keyLogger) {
@@ -161,11 +180,12 @@ public class Controller extends Observable implements Observer {
                 SolarSystem currentSystem = model.getCurrentSystem();
                 if (currentSystem != null) {
                     List<Signature> parsedSignatures = parseSignatures(event.getInput(), currentSystem.getId());
-
-                    databaseController.mergeSignatures(parsedSignatures, model.getCharacter(), currentSystem.getId());
-                    ControllerEvent locationEvent = new ControllerEvent(currentSystem, ControllerEvent.EventType.NEW_SIGNATURES);
-                    setChanged();
-                    notifyObservers(locationEvent);
+                    if(parsedSignatures != null){
+                        databaseController.mergeSignatures(parsedSignatures, model.getCharacter(), currentSystem.getId());
+                        ControllerEvent locationEvent = new ControllerEvent(currentSystem, ControllerEvent.EventType.NEW_SIGNATURES);
+                        setChanged();
+                        notifyObservers(locationEvent);
+                    }
                 }
             } else if (o == locationPoller) {
                 LocationPollerEvent event = (LocationPollerEvent) arg;
@@ -189,12 +209,16 @@ public class Controller extends Observable implements Observer {
         //turn off debug logging from JNativeHook. great lib btw!
         java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GlobalScreen.class.getPackage().getName());
         logger.setLevel(Level.WARNING);
+        
         GlobalScreen.registerNativeHook();
-
+                        
         keyLogger = new KeyLogger();
         keyLogger.addObserver(this);
-
+        
         GlobalScreen.addNativeKeyListener(keyLogger);
+
+        
+        
         LOGGER.info("initialized key logger");
 
         databaseController = new DatabaseController();
@@ -206,6 +230,7 @@ public class Controller extends Observable implements Observer {
     public void shutDown() {
         try {
             GlobalScreen.unregisterNativeHook();
+            LOGGER.info("unregisterted key logger.");
         } catch (Exception ex) {
             LOGGER.warn("error while shutting down key logger.", ex);
         }
