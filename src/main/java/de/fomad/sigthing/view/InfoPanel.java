@@ -10,6 +10,7 @@ import de.fomad.sigthing.model.Character;
 import de.fomad.sigthing.model.Constants;
 import de.fomad.sigthing.model.Signature;
 import de.fomad.sigthing.model.SolarSystem;
+import de.fomad.sigthing.view.icons.IconCache;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -97,7 +98,7 @@ public class InfoPanel extends JPanel {
         addedField = new JTextField(11);
         addedField.setEditable(false);
 
-        JButton waypointButton  = new JButton("set destination");
+        JButton waypointButton  = new JButton("set destination", parent.getIconCache().getImageIcon(IconCache.IconId.ROUTE));
         waypointButton.addActionListener(e -> {
             try{
                 if(solarSystem != null){

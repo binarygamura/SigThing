@@ -34,12 +34,18 @@ public class SimpleForm extends JPanel {
     }
     
     public void addRow(String title, JComponent component) {
+        
+        int oldFill = c.fill;
+        
 	c.gridy++;
 	c.gridx = 0;
 	c.anchor = GridBagConstraints.LINE_END;
 	add(new JLabel(title), c);
 	c.gridx++;
-	c.anchor = GridBagConstraints.LINE_START;
+	c.anchor = GridBagConstraints.CENTER;
+        c.fill = GridBagConstraints.HORIZONTAL;
 	add(component, c);
+        
+        c.fill = oldFill;
     }
 }

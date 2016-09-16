@@ -45,6 +45,8 @@ public class IconCache {
     public enum IconId{
 	CANCEL_ICON("cross_16.png"),
 	
+        ROUTE("32_bit_16.png"),
+        
 	INFO_ICON("information_16.png"),
 	
         CONFIGURATION("server_configuration_16.png"),
