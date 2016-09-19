@@ -31,6 +31,7 @@ public class ControllerEvent<T> {
 	GOT_CHARACTER_INFO,
 	GOT_CHARACTER,
 	SOLAR_SYSTEM_CHANGE,
-        NEW_SIGNATURES
+        NEW_SIGNATURES,
+        OFFLINE
     }
 }

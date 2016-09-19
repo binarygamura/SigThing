@@ -189,13 +189,21 @@ public class Controller extends Observable implements Observer {
                 }
             } else if (o == locationPoller) {
                 LocationPollerEvent event = (LocationPollerEvent) arg;
-                SolarSystem newLocation = event.getNewLocation();
-                querySolarSystemInformation(newLocation);
-                databaseController.save(newLocation, model.getCharacter());
-
-                model.addSolarSystemToTravelRoute(newLocation);
-                setChanged();
-                notifyObservers(new ControllerEvent<>(newLocation, ControllerEvent.EventType.SOLAR_SYSTEM_CHANGE));
+                switch(event.getType()){
+                    case LOCATION:
+                        SolarSystem newLocation = event.getNewLocation();
+                        querySolarSystemInformation(newLocation);
+                        databaseController.save(newLocation, model.getCharacter());
+                        model.addSolarSystemToTravelRoute(newLocation);
+                        setChanged();
+                        notifyObservers(new ControllerEvent<>(newLocation, ControllerEvent.EventType.SOLAR_SYSTEM_CHANGE));
+                        break;
+                    case OFFLINE:
+                        setChanged();
+                        notifyObservers(new ControllerEvent<>(null, ControllerEvent.EventType.OFFLINE));
+                        break;
+                }
+                
             }
         } catch (SQLException | URISyntaxException | IOException ex) {
             LOGGER.fatal("error while handling events.", ex);

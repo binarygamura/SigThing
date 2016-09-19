@@ -48,8 +48,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 /**
@@ -364,6 +362,9 @@ public class GUI extends JFrame implements Observer {
 	    if (o == controller) {
 		ControllerEvent event = (ControllerEvent) arg;
 		switch (event.getType()) {
+                    case OFFLINE:
+                        infoPanel.setOffline(true);
+                        break;
 		    case ERROR:
 			Exception e = (Exception) event.getPayload();
                         if(isVisible()){
@@ -385,6 +386,7 @@ public class GUI extends JFrame implements Observer {
 			infoPanel.setIcon(character);
 			break;
 		    case SOLAR_SYSTEM_CHANGE:
+                        infoPanel.setOffline(false);
                         table.setData(controller.getSignaturesForCurrentSystem());
 			infoPanel.setCurrentSolarSystem((SolarSystem) event.getPayload());
 			historyPanel.repaintList();

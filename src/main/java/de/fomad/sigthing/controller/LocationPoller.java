@@ -31,6 +31,8 @@ public class LocationPoller extends Observable implements Runnable {
     private final String apiUrl;
 
     private Location lastLocation;
+    
+    private boolean wasOffline;
 
     public LocationPoller(Model model, String apiUrl, HttpController httpController) {
 	this.model = model;
@@ -61,13 +63,21 @@ public class LocationPoller extends Observable implements Runnable {
 	    URI locationUri = new URI(apiUrl + "/characters/" + model.getCharacter().getId() + "/location/");
 	    while (!Thread.currentThread().isInterrupted()) {
 		location = httpController.makeApiGetRequest(locationUri, Location.class, true);
-		LOGGER.info("got location from solar system \"" + location.getSolarSystem().getName() + "\".");
-		    //{"message": "Authentication needed, bad token", "key": "authNeeded", "exceptionType": "UnauthorizedError"}
-
-		if (!location.equals(lastLocation)) {
+                
+                //{"message": "Authentication needed, bad token", "key": "authNeeded", "exceptionType": "UnauthorizedError"}
+                if(location.getSolarSystem() == null){
+                    if(!wasOffline){
+                        setChanged();
+                        notifyObservers(new LocationPollerEvent(null, LocationPollerEvent.Type.OFFLINE));
+                        wasOffline = true;
+                    }
+                }
+                else if (!location.equals(lastLocation) || wasOffline) {
 		    lastLocation = location;
+                    wasOffline = false;
+                    LOGGER.info("got location from solar system \"" + location.getSolarSystem().getName() + "\".");
 		    setChanged();
-		    notifyObservers(new LocationPollerEvent(location.getSolarSystem()));
+		    notifyObservers(new LocationPollerEvent(location.getSolarSystem(), LocationPollerEvent.Type.LOCATION));
 		}
 
 		Thread.sleep(POLL_INTERVAL);

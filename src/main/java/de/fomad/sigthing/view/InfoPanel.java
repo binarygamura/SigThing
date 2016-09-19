@@ -11,7 +11,8 @@ import de.fomad.sigthing.model.Constants;
 import de.fomad.sigthing.model.Signature;
 import de.fomad.sigthing.model.SolarSystem;
 import de.fomad.sigthing.view.icons.IconCache;
-import java.awt.event.ActionListener;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -116,6 +117,10 @@ public class InfoPanel extends JPanel {
 	iconLabel.setPreferredSize(new Dimension(156, 156));
 	iconLabel.setBorder(BorderFactory.createTitledBorder("current pilot"));
 	iconLabel.setHorizontalAlignment(JLabel.CENTER);
+        iconLabel.setHorizontalTextPosition(JLabel.CENTER);
+        iconLabel.setVerticalTextPosition(JLabel.CENTER);
+        iconLabel.setFont(iconLabel.getFont().deriveFont(Font.BOLD, 16f));
+        iconLabel.setForeground(Color.red);
 
 	solarSystemNameField = new JTextField(10);
 	solarSystemNameField.setEditable(false);
@@ -145,5 +150,12 @@ public class InfoPanel extends JPanel {
 	iconLabel.setIcon(new ImageIcon(character.getPortrait().getLarge().getHref().toURL()));
     }
     
-
+    public void setOffline(boolean isOffline){
+        if(isOffline){
+            iconLabel.setText("OFFLINE");
+        }
+        else {
+            iconLabel.setText("");
+        }
+    }
 }
