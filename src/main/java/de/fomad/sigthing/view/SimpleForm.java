@@ -26,11 +26,17 @@ public class SimpleForm extends JPanel {
     }
 
     public void addLine(JComponent component){
+
+        int oldFill = c.fill;
         c.gridy++;
         c.gridx = 0;
         c.gridwidth = 2;
+        c.weightx = Double.MAX_VALUE;
+        c.fill = GridBagConstraints.HORIZONTAL;
         add(component, c);
         c.gridwidth = 1;
+        c.fill = oldFill;
+        
     }
     
     public void addRow(String title, JComponent component) {

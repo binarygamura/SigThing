@@ -41,6 +41,8 @@ public class InfoPanel extends JPanel {
 
     private JTextField addedField;
     
+    private JTextField signatureNameField;
+    
     private JLabel iconLabel;
 
     private JTextField solarSystemNameField;
@@ -72,6 +74,7 @@ public class InfoPanel extends JPanel {
             signalStrenghField.setText("");
             signatureScanGroupField.setText("");            
             addedField.setText("");
+            signatureNameField.setText("");
         }
         else {
             signatureField.setText(signature.getSignature());
@@ -79,6 +82,8 @@ public class InfoPanel extends JPanel {
             signatureScanGroupField.setText(signature.getScanGroup());
             addedField.setText(dateFormat.format(signature.getAdded()));
             addedField.setCaretPosition(0);
+            signatureNameField.setText(signature.getName());
+            signatureNameField.setCaretPosition(0);
         }
     }
     
@@ -90,6 +95,8 @@ public class InfoPanel extends JPanel {
     }
 
     private void init() {
+        signatureNameField = new JTextField(11);
+        signatureNameField.setEditable(false);
 	signatureField = new JTextField(11);
 	signatureField.setEditable(false);
 	signalStrenghField = new JTextField(11);
@@ -136,6 +143,7 @@ public class InfoPanel extends JPanel {
 
 	SimpleForm selectedItemForm = new SimpleForm();
 	selectedItemForm.setBorder(BorderFactory.createTitledBorder("selected item"));
+        selectedItemForm.addRow("Name", signatureNameField);
 	selectedItemForm.addRow("Signature", signatureField);
 	selectedItemForm.addRow("Strength", signalStrenghField);
 	selectedItemForm.addRow("Scan Group", signatureScanGroupField);
