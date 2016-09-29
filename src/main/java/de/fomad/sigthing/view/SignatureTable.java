@@ -99,6 +99,8 @@ public class SignatureTable extends JTable {
                     return "Group";
                 case 3:
                     return "Signal";
+                case 4:
+                    return "Added by";
                 default:
                     return "unknown!";
             }
@@ -127,6 +129,9 @@ public class SignatureTable extends JTable {
                     case 3:
                         result = decimalFormat.format(signature.getSignalStrength())+"%";
                         break;
+                    case 4:
+                        result = signature.getAddedBy();
+                        break;
                     default:
                         result = "";
                 }
@@ -141,7 +146,7 @@ public class SignatureTable extends JTable {
 
         @Override
         public int getColumnCount() {
-            return 4;
+            return 5;
         }
 
         @Override

@@ -130,6 +130,7 @@ public class DummyWebServer extends Observable implements Runnable {
 	    notifyObservers(event);
 	}
 	finally {
+            stopListening();
 	    LOGGER.info("internal webserver terminated.");
 	}
     }

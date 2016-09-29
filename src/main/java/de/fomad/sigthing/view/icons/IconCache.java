@@ -43,6 +43,12 @@ public class IconCache {
     }
     
     public enum IconId{
+        DOTLAN("dotlan.png"),
+        
+        ADD("add_16.png"),
+        
+        ZKILLBOARD_ICON("zkillboard.png"),
+        
 	CANCEL_ICON("cross_16.png"),
 	
         ROUTE("32_bit_16.png"),

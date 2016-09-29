@@ -32,6 +32,7 @@ public class ControllerEvent<T> {
 	GOT_CHARACTER,
 	SOLAR_SYSTEM_CHANGE,
         NEW_SIGNATURES,
-        OFFLINE
+        OFFLINE,
+        DOWNTIME
     }
 }

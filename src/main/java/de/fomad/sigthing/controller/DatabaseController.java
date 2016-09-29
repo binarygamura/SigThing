@@ -32,7 +32,7 @@ public class DatabaseController {
 
 	databasePool = new ComboPooledDataSource();
 	databasePool.setDriverClass("org.h2.Driver");
-	databasePool.setJdbcUrl("jdbc:h2:~/sigthing.db");
+	databasePool.setJdbcUrl("jdbc:h2:~/sigthing.db;AUTO_SERVER=TRUE");
 	databasePool.setUser("");
 	databasePool.setPassword("");
 

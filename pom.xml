@@ -26,6 +26,12 @@
     </developers>
     <dependencies>
         <dependency>
+            <groupId>de.fomad</groupId>
+            <artifactId>SigLib</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -81,6 +87,7 @@
                             <addClasspath>true</addClasspath>
                             <mainClass>de.fomad.sigthing.view.GUI</mainClass>
                             <classpathPrefix>libs/</classpathPrefix>
+                            <!--<SplashScreen-Image>splash-image.png</SplashScreen-Image>-->
                         </manifest>
                     </archive>
                 </configuration>

@@ -12,9 +12,11 @@ import de.fomad.sigthing.model.Signature;
 import de.fomad.sigthing.model.SolarSystem;
 import de.fomad.sigthing.view.icons.IconCache;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -119,6 +121,31 @@ public class InfoPanel extends JPanel {
             }
         });
         
+        JButton dotlanButton = new JButton("dotlan", parent.getIconCache().getImageIcon(IconCache.IconId.DOTLAN));
+        dotlanButton.addActionListener(e -> {
+            try{
+                if(solarSystem != null){
+                    URI uri = new URI("http://evemaps.dotlan.net/system/"+solarSystem.getName());
+                    Desktop.getDesktop().browse(uri);
+                }
+            }
+            catch(IOException | URISyntaxException ex){
+                LOGGER.warn("unable to open browser!");
+            }
+        });
+        JButton zkillboardButton = new JButton("zKillboard", parent.getIconCache().getImageIcon(IconCache.IconId.ZKILLBOARD_ICON));
+        zkillboardButton.addActionListener(e -> {
+            try{
+                if(solarSystem != null){
+                    URI uri = new URI("https://zkillboard.com/system/"+solarSystem.getId());
+                    Desktop.getDesktop().browse(uri);
+                }
+            }
+            catch(IOException | URISyntaxException ex){
+                LOGGER.warn("unable to open browser!");
+            }
+        });
+        
 	iconLabel = new JLabel();
 	iconLabel.setMinimumSize(new Dimension(156, 156));
 	iconLabel.setPreferredSize(new Dimension(156, 156));
@@ -139,6 +166,8 @@ public class InfoPanel extends JPanel {
 	solarSystemForm.addRow("Name", solarSystemNameField);
 	solarSystemForm.addRow("Security", securityStatusField);
         solarSystemForm.addLine(waypointButton);
+        solarSystemForm.addLine(dotlanButton);
+        solarSystemForm.addLine(zkillboardButton);
         
 
 	SimpleForm selectedItemForm = new SimpleForm();
@@ -158,12 +187,7 @@ public class InfoPanel extends JPanel {
 	iconLabel.setIcon(new ImageIcon(character.getPortrait().getLarge().getHref().toURL()));
     }
     
-    public void setOffline(boolean isOffline){
-        if(isOffline){
-            iconLabel.setText("OFFLINE");
-        }
-        else {
-            iconLabel.setText("");
-        }
+    public void setIconText(String text){
+        iconLabel.setText(text);
     }
 }

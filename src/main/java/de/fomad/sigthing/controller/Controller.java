@@ -92,11 +92,11 @@ public class Controller extends Observable implements Observer {
         List<Signature> signatures = null;
         System.out.println(data);
         String[] lines = data.split("\\n");
-        if(lines.length > 0){
+        if (lines.length > 0) {
             for (String line : lines) {
                 columns = line.split("\\t");
                 if (columns.length == 6 && columns[1].equalsIgnoreCase("Cosmic Signature")) {
-                    if(signatures == null){
+                    if (signatures == null) {
                         signatures = new ArrayList<>(lines.length);
                     }
                     strengthString = columns[4].substring(0, columns[4].length() - 1).replace(',', '.');
@@ -115,9 +115,11 @@ public class Controller extends Observable implements Observer {
     }
 
     private void querySolarSystemInformation(SolarSystem solarSystem) throws URISyntaxException, IOException {
-        URI dataUri = new URI(apiUrl + "/solarsystems/" + solarSystem.getId() + "/");
-        SolarSystemInformation solarSystemInfo = httpController.makeApiGetRequest(dataUri, SolarSystemInformation.class, false);
-        solarSystem.setInformation(solarSystemInfo);
+        if(solarSystem != null){
+            URI dataUri = new URI(apiUrl + "/solarsystems/" + solarSystem.getId() + "/");
+            SolarSystemInformation solarSystemInfo = httpController.makeApiGetRequest(dataUri, SolarSystemInformation.class, false);
+            solarSystem.setInformation(solarSystemInfo);
+        }
     }
 
     private void queryCharacterSheet() throws URISyntaxException, IOException {
@@ -139,9 +141,9 @@ public class Controller extends Observable implements Observer {
         fireControllerEvent(info, ControllerEvent.EventType.GOT_CHARACTER_INFO);
     }
 
-    public void addWaypointTo(SolarSystem solarSystem) throws URISyntaxException, IOException{
-        URI waypointUri = new URI(apiUrl+"/characters/"+model.getCharacterInfo().getId()+"/ui/autopilot/waypoints/");
-        URI destinationUri = new URI(apiUrl+"/solarsystems/"+solarSystem.getInformation().getId()+"/");
+    public void addWaypointTo(SolarSystem solarSystem) throws URISyntaxException, IOException {
+        URI waypointUri = new URI(apiUrl + "/characters/" + model.getCharacterInfo().getId() + "/ui/autopilot/waypoints/");
+        URI destinationUri = new URI(apiUrl + "/solarsystems/" + solarSystem.getInformation().getId() + "/");
         WaypointRequest request = new WaypointRequest();
         WaypointRequest.SolarSystem internalSystem = new WaypointRequest.SolarSystem();
         internalSystem.setId(solarSystem.getId());
@@ -151,7 +153,20 @@ public class Controller extends Observable implements Observer {
         request.setSolarSystem(internalSystem);
         httpController.makeApiPostRequest(waypointUri, Object.class, true, request);
     }
-    
+
+    public void addSignaturesRaw(String input, SolarSystem currentSystem) throws SQLException {
+        input = input.trim();
+        if(!input.isEmpty() && currentSystem != null){
+            List<Signature> parsedSignatures = parseSignatures(input, currentSystem.getId());
+            if (parsedSignatures != null) {
+                databaseController.mergeSignatures(parsedSignatures, model.getCharacter(), currentSystem.getId());
+                ControllerEvent locationEvent = new ControllerEvent(currentSystem, ControllerEvent.EventType.NEW_SIGNATURES);
+                setChanged();
+                notifyObservers(locationEvent);
+            }
+        }
+    }
+
     @Override
     public void update(Observable o, Object arg) {
         try {
@@ -172,24 +187,24 @@ public class Controller extends Observable implements Observer {
                         queryCharacterInformation();
                         queryCharacterSheet();
                         locationPoller.start();
-
                         break;
                 }
             } else if (o == keyLogger) {
                 KeyLoggerEvent event = (KeyLoggerEvent) arg;
                 SolarSystem currentSystem = model.getCurrentSystem();
-                if (currentSystem != null) {
-                    List<Signature> parsedSignatures = parseSignatures(event.getInput(), currentSystem.getId());
-                    if(parsedSignatures != null){
-                        databaseController.mergeSignatures(parsedSignatures, model.getCharacter(), currentSystem.getId());
-                        ControllerEvent locationEvent = new ControllerEvent(currentSystem, ControllerEvent.EventType.NEW_SIGNATURES);
-                        setChanged();
-                        notifyObservers(locationEvent);
-                    }
-                }
+//                if (currentSystem != null) {
+                    addSignaturesRaw(event.getInput(), currentSystem);
+//                    List<Signature> parsedSignatures = parseSignatures(event.getInput(), currentSystem.getId());
+//                    if (parsedSignatures != null) {
+//                        databaseController.mergeSignatures(parsedSignatures, model.getCharacter(), currentSystem.getId());
+//                        ControllerEvent locationEvent = new ControllerEvent(currentSystem, ControllerEvent.EventType.NEW_SIGNATURES);
+//                        setChanged();
+//                        notifyObservers(locationEvent);
+//                    }
+//                }
             } else if (o == locationPoller) {
                 LocationPollerEvent event = (LocationPollerEvent) arg;
-                switch(event.getType()){
+                switch (event.getType()) {
                     case LOCATION:
                         SolarSystem newLocation = event.getNewLocation();
                         querySolarSystemInformation(newLocation);
@@ -202,8 +217,12 @@ public class Controller extends Observable implements Observer {
                         setChanged();
                         notifyObservers(new ControllerEvent<>(null, ControllerEvent.EventType.OFFLINE));
                         break;
+                    case SERVICE_UNAVAILABLE:
+                        setChanged();
+                        notifyObservers(new ControllerEvent<>(null, ControllerEvent.EventType.DOWNTIME));
+                        break;
                 }
-                
+
             }
         } catch (SQLException | URISyntaxException | IOException ex) {
             LOGGER.fatal("error while handling events.", ex);
@@ -217,17 +236,19 @@ public class Controller extends Observable implements Observer {
         //turn off debug logging from JNativeHook. great lib btw!
         java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GlobalScreen.class.getPackage().getName());
         logger.setLevel(Level.WARNING);
-        
-        GlobalScreen.registerNativeHook();
-                        
-        keyLogger = new KeyLogger();
-        keyLogger.addObserver(this);
-        
-        GlobalScreen.addNativeKeyListener(keyLogger);
 
-        
-        
-        LOGGER.info("initialized key logger");
+        try {
+            GlobalScreen.registerNativeHook();
+
+            keyLogger = new KeyLogger();
+            keyLogger.addObserver(this);
+
+            GlobalScreen.addNativeKeyListener(keyLogger);
+
+            LOGGER.info("initialized key logger");
+        } catch (UnsatisfiedLinkError ex) {
+            LOGGER.warn("unable to initalize key logger.");
+        }
 
         databaseController = new DatabaseController();
         databaseController.initDatabase();
@@ -239,7 +260,7 @@ public class Controller extends Observable implements Observer {
         try {
             GlobalScreen.unregisterNativeHook();
             LOGGER.info("unregisterted key logger.");
-        } catch (Exception ex) {
+        } catch (UnsatisfiedLinkError | Exception ex) {
             LOGGER.warn("error while shutting down key logger.", ex);
         }
         webserver.stopListening();

@@ -10,7 +10,8 @@ public class LocationPollerEvent {
     
     public enum Type {
         LOCATION,
-        OFFLINE
+        OFFLINE,
+        SERVICE_UNAVAILABLE
     }
     private SolarSystem newLocation;
 

@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.Arrays;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
@@ -95,7 +96,7 @@ public class HttpController {
 		.setUri(verificationUrl)
 		.build();
 	try (CloseableHttpResponse response = httpClient.execute(loginHost, request, loginContext)) {
-	    if (response.getStatusLine().getStatusCode() != 200) {
+	    if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
 		String responseMessage = EntityUtils.toString(response.getEntity());
 		throw new IOException("unable to trade the access code to a token! " + responseMessage);
 	    }
@@ -142,7 +143,7 @@ public class HttpController {
         }
         HttpUriRequest request = builder.build();
 	try (CloseableHttpResponse response = httpClient.execute(request)) {
-	    if (response.getStatusLine().getStatusCode() != 200) {
+	    if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
 		String responseMessage = EntityUtils.toString(response.getEntity());
 		throw new IOException("unable to perform post query! " + responseMessage);
 	    }
@@ -168,9 +169,9 @@ public class HttpController {
         }
         HttpUriRequest request = builder.build();
 	try (CloseableHttpResponse response = httpClient.execute(request)) {
-	    if (response.getStatusLine().getStatusCode() != 200) {
+	    if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
 		String responseMessage = EntityUtils.toString(response.getEntity());
-		throw new IOException("unable to perform get query! " + responseMessage);
+		throw new HttpControllerException("unable to perform get query! " + responseMessage, response.getStatusLine().getStatusCode());
 	    }
 
 	    return gson.fromJson(EntityUtils.toString(response.getEntity()), responseType);
