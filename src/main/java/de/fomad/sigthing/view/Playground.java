@@ -1,6 +1,6 @@
 package de.fomad.sigthing.view;
 
-import de.fomad.sigthing.controller.DatabaseController;
+import de.fomad.siglib.db.DatabaseController;
 import de.fomad.sigthing.controller.HttpController;
 import java.net.URI;
 import java.net.URISyntaxException;

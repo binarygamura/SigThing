@@ -1,6 +1,6 @@
 package de.fomad.sigthing.controller;
 
-import de.fomad.sigthing.model.Location;
+import de.fomad.siglib.entities.Location;
 import de.fomad.sigthing.model.LocationPollerEvent;
 import de.fomad.sigthing.model.Model;
 import java.io.IOException;
@@ -89,7 +89,7 @@ public class LocationPoller extends Observable implements Runnable {
                     if(ex.getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE){
                         LOGGER.info("service currently not available... retry in 5 minutes.");
                         setChanged();
-                        notifyObservers(new LocationPollerEvent(null, LocationPollerEvent.Type.LOCATION));
+                        notifyObservers(new LocationPollerEvent(null, LocationPollerEvent.Type.SERVICE_UNAVAILABLE));
                         Thread.sleep(FIVE_MINUTES);
                     }
                     else {

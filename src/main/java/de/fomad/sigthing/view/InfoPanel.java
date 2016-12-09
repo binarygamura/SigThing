@@ -1,15 +1,15 @@
 package de.fomad.sigthing.view;
 
+import de.fomad.siglib.entities.Pilot;
+import de.fomad.siglib.entities.Signature;
+import de.fomad.siglib.entities.SolarSystem;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import de.fomad.sigthing.model.Character;
 import de.fomad.sigthing.model.Constants;
-import de.fomad.sigthing.model.Signature;
-import de.fomad.sigthing.model.SolarSystem;
 import de.fomad.sigthing.view.icons.IconCache;
 import java.awt.Color;
 import java.awt.Desktop;
@@ -183,7 +183,7 @@ public class InfoPanel extends JPanel {
 	add(solarSystemForm, BorderLayout.EAST);
     }
 
-    public void setIcon(Character character) throws MalformedURLException {
+    public void setIcon(Pilot character) throws MalformedURLException {
 	iconLabel.setIcon(new ImageIcon(character.getPortrait().getLarge().getHref().toURL()));
     }
     

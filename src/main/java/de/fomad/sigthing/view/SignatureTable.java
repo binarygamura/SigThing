@@ -1,6 +1,6 @@
 package de.fomad.sigthing.view;
 
-import de.fomad.sigthing.model.Signature;
+import de.fomad.siglib.entities.Signature;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;

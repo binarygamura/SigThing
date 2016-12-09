@@ -1,6 +1,7 @@
 package de.fomad.sigthing.model;
 
 
+import de.fomad.siglib.entities.SolarSystemInformation;
 import static org.junit.Assert.*;
 import org.junit.Test;
 /**

@@ -1,8 +1,8 @@
 package de.fomad.sigthing.view;
 
+import de.fomad.siglib.entities.SolarSystem;
 import de.fomad.sigthing.model.Constants;
 import de.fomad.sigthing.model.Model;
-import de.fomad.sigthing.model.SolarSystem;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;

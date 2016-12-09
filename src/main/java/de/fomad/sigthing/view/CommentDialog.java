@@ -1,6 +1,6 @@
 package de.fomad.sigthing.view;
 
-import de.fomad.sigthing.model.Signature;
+import de.fomad.siglib.entities.Signature;
 import de.fomad.sigthing.view.icons.IconCache;
 import java.awt.BorderLayout;
 import java.awt.Dimension;

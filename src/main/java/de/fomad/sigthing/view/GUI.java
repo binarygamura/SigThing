@@ -1,9 +1,12 @@
 package de.fomad.sigthing.view;
 
+import de.fomad.siglib.entities.CharacterInfo;
+import de.fomad.siglib.entities.Pilot;
+import de.fomad.siglib.entities.Signature;
+import de.fomad.siglib.entities.SolarSystem;
 import de.fomad.sigthing.controller.ConfigUtility;
 import de.fomad.sigthing.controller.Controller;
 import de.fomad.sigthing.model.ApplicationConfiguration;
-import de.fomad.sigthing.model.CharacterInfo;
 import de.fomad.sigthing.model.ControllerEvent;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -33,16 +36,12 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jnativehook.NativeHookException;
-import de.fomad.sigthing.model.Character;
-import de.fomad.sigthing.model.Signature;
-import de.fomad.sigthing.model.SolarSystem;
 import de.fomad.sigthing.view.icons.IconCache;
 import de.fomad.sigthing.view.sounds.SoundManager;
 import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Locale;
 import java.util.TimeZone;
 import javax.imageio.ImageIO;
@@ -426,7 +425,7 @@ public class GUI extends JFrame implements Observer {
                         LOGGER.info("got complete character info.");
                         break;
                     case GOT_CHARACTER:
-                        Character character = (Character) event.getPayload();
+                        Pilot character = (Pilot) event.getPayload();
                         LOGGER.info("got complete character data.");
                         infoPanel.setIcon(character);
                         setIconImage(ImageIO.read(character.getPortrait().getSmall().getHref().toURL()));

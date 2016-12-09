@@ -61,7 +61,7 @@
             <version>2.0.2</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.192</version>
@@ -72,7 +72,7 @@
             <artifactId>c3p0</artifactId>
             <version>0.9.1.2</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency>-->
     </dependencies>
     <build>
         <finalName>SigThing</finalName>

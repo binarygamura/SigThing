@@ -1,5 +1,6 @@
 package de.fomad.sigthing.model;
 
+import de.fomad.siglib.entities.CharacterInfo;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

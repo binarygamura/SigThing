@@ -1,5 +1,6 @@
 package de.fomad.sigthing.model;
 
+import de.fomad.siglib.entities.Location;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.Test;

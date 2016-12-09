@@ -1,7 +1,12 @@
 package de.fomad.sigthing.controller;
 
+import de.fomad.siglib.db.DatabaseController;
+import de.fomad.siglib.entities.CharacterInfo;
+import de.fomad.siglib.entities.Pilot;
+import de.fomad.siglib.entities.Signature;
+import de.fomad.siglib.entities.SolarSystem;
+import de.fomad.siglib.entities.SolarSystemInformation;
 import de.fomad.sigthing.model.AuthData;
-import de.fomad.sigthing.model.CharacterInfo;
 import de.fomad.sigthing.model.ControllerEvent;
 import de.fomad.sigthing.model.DummyWebServerEvent;
 import de.fomad.sigthing.model.Model;
@@ -16,12 +21,8 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
-import de.fomad.sigthing.model.Character;
 import de.fomad.sigthing.model.KeyLoggerEvent;
 import de.fomad.sigthing.model.LocationPollerEvent;
-import de.fomad.sigthing.model.Signature;
-import de.fomad.sigthing.model.SolarSystem;
-import de.fomad.sigthing.model.SolarSystemInformation;
 import de.fomad.sigthing.model.WaypointRequest;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class Controller extends Observable implements Observer {
 
     private void queryCharacterSheet() throws URISyntaxException, IOException {
         URI dataUri = new URI(apiUrl + "/characters/" + model.getCharacterInfo().getId() + "/");
-        Character characterData = httpController.makeApiGetRequest(dataUri, Character.class, true);
+        Pilot characterData = httpController.makeApiGetRequest(dataUri, Pilot.class, true);
         model.setCharacter(characterData);
         fireControllerEvent(characterData, ControllerEvent.EventType.GOT_CHARACTER);
     }

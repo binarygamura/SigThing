@@ -1,5 +1,7 @@
 package de.fomad.sigthing.model;
 
+import de.fomad.siglib.entities.Reference;
+
 /**
  *
  * @author binary

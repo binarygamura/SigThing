@@ -1,5 +1,6 @@
 package de.fomad.sigthing.model;
 
+import de.fomad.siglib.entities.Pilot;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.Test;
@@ -94,7 +95,7 @@ public class CharacterTest extends BasicJsonParseTest {
 		+ "  },\n"
 		+ "  \"name\": \"Blacksmoke16\"\n"
 		+ "}";
-	Character character = gson.fromJson(source, Character.class);
+	       Pilot character = gson.fromJson(source, Pilot.class);
 
 	assertNotNull(character);
 	assertEquals("name is wrong.", "Blacksmoke16", character.getName());

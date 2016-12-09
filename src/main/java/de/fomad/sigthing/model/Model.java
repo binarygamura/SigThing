@@ -1,5 +1,8 @@
 package de.fomad.sigthing.model;
 
+import de.fomad.siglib.entities.CharacterInfo;
+import de.fomad.siglib.entities.Pilot;
+import de.fomad.siglib.entities.SolarSystem;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +16,7 @@ public class Model {
     
     private CharacterInfo characterInfo;
 
-    private Character character;
+    private Pilot character;
     
     private final List<SolarSystem> travelRoute;
     
@@ -39,11 +42,11 @@ public class Model {
 	return travelRoute;
     }
 
-    public Character getCharacter() {
+    public Pilot getCharacter() {
 	return character;
     }
 
-    public void setCharacter(Character character) {
+    public void setCharacter(Pilot character) {
 	this.character = character;
     }
 
